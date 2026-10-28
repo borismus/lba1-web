@@ -57,6 +57,14 @@
   #moddrop { border: 1.5px dashed var(--line); border-radius: 10px; padding: 12px 14px; margin-top: 10px; color: var(--muted); font-size: 13px; transition: .15s; }
   #moddrop.over { border-color: var(--accent); background: rgba(224, 179, 74, .06); }
   #moddrop .buttons { justify-content: flex-start; margin-top: 8px; }
+  #known { margin-top: 14px; }
+  #known[hidden] { display: none; }
+  #known h3 { font-size: 12px; color: var(--muted); margin: 0 0 6px; font-weight: 600; }
+  .known { display: flex; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .known > div { flex: 1; min-width: 0; }
+  .known b { color: var(--text); }
+  .known .by, .known p { color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
+  .known .btn { flex: none; text-decoration: none; color: var(--text); }
   #modprogress { min-height: 1.4em; margin-top: 8px; }
   #moderror { color: var(--bad); }
   .keys { text-align: left; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 14px auto; width: max-content; }
@@ -140,6 +148,7 @@
           </div>
           <div id="modprogress"></div>
           <div id="moderror"></div>
+          <div id="known" hidden><h3>Known mods</h3><div id="knownlist"></div></div>
           <input type="file" id="modinput" accept=".zip,application/zip" hidden>
           <input type="file" id="moddirinput" webkitdirectory hidden>
         </div>
@@ -330,6 +339,7 @@
     $('moddroptext').textContent = mod
       ? 'Drop another mod here to play that one instead (this one and its saves are removed).'
       : 'Drop a mod here (its zip or folder) to play it with your copy of the game. The game itself stays as it is.';
+    showKnown(mod);
     if (!mod) return;
     $('modname').textContent = mod.name;
     $('modver').textContent = mod.version ? 'v' + mod.version : '';
@@ -337,6 +347,30 @@
     $('modlink').hidden = !mod.source;
     $('modnote').textContent = [mod.untested && `Untested with your copy: ${mod.untested}`, mod.credits,
       MODS.hasSaves(FS, mod.id) && 'Its saves are kept apart from the game\'s'].filter(Boolean).map(t => t.replace(/\.?$/, '.')).join(' ');
+  }
+  // the known mods (mods/index.json, made by catalog.mjs from the repo),
+  // each added the way a link adds it
+  let known = null;
+  async function showKnown(mod) {
+    if (!known) {
+      try { known = await (await fetch('mods/index.json')).json(); } catch (e) { known = []; }
+    }
+    const list = known.filter(k => !mod || k.id !== mod.id);
+    $('known').hidden = !list.length;
+    $('knownlist').textContent = '';
+    for (const k of list) {
+      const row = document.createElement('div'); row.className = 'known';
+      const info = document.createElement('div');
+      const name = document.createElement('b'); name.textContent = k.name;
+      const by = document.createElement('span'); by.className = 'by';
+      by.textContent = [k.version && ' v' + k.version, k.authors.length && ' · ' + k.authors.join(', ')].filter(Boolean).join('');
+      const desc = document.createElement('p'); desc.textContent = k.description;
+      info.append(name, by, desc);
+      const add = document.createElement('a'); add.className = 'btn'; add.textContent = mod ? 'Play instead' : 'Add';
+      add.href = '?mod=' + encodeURIComponent(k.url).replace(/%2F/g, '/').replace(/%3A/g, ':');
+      row.append(info, add);
+      $('knownlist').append(row);
+    }
   }
   const modProgress = t => { $('modprogress').textContent = t; $('moderror').textContent = ''; };
   async function addMod(picks) {

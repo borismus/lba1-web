@@ -343,6 +343,27 @@ start:
   END_COMPORTEMENT
 ```
 
+## Listing a mod
+
+The page lists the known mods (Play screen, "Known mods"): this repo's own
+(`mods/<id>/`, served next to the page as `mods/<id>.zip`) and the ones in
+`mods/catalog.json`. To list yours, put its zip online where other pages
+may download it (CORS: e.g. GitHub Pages, or raw.githubusercontent.com for
+a public repo) and send a pull request adding an entry:
+
+```json
+[
+  { "id": "my-mod", "name": "My Mod", "version": "1.0.0",
+    "description": "One or two sentences.", "authors": ["You"],
+    "url": "https://you.github.io/my-mod/my-mod.zip",
+    "homepage": "https://github.com/you/my-mod" }
+]
+```
+
+`name` and an `https` `url` are required (`catalog.mjs` checks them when
+the page is built). The page runs `mod check` on every mod it adds, listed
+or not.
+
 ## Open questions
 
 - **New art.** Recolouring and reusing the base's models covers a lot;

@@ -3,8 +3,22 @@
   "id": "the-cast",
   "name": "The Cast",
   "version": "0.1.0",
+  "authors": [
+    "Boris Smus"
+  ],
   "description": "Every 3D model in the game, standing in rows on Citadel Island paving. Walk up to one and talk to it (action key) for its model number and bodies, to use in your own mods.",
-  "requires": { "releases": ["gog-classic"], "features": ["body-pool"] },
-  "ops": ["mod.ops"],
-  "start": { "scene": "@cast" }
+  "requires": {
+    "releases": [
+      "gog-classic"
+    ],
+    "features": [
+      "body-pool"
+    ]
+  },
+  "ops": [
+    "mod.ops"
+  ],
+  "start": {
+    "scene": "@cast"
+  }
 }
