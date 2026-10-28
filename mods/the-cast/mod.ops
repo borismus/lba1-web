@@ -1,0 +1,2 @@
+# One level: the models in rows (levels/cast.txt, an ASCII map).
+level @cast from levels/cast.txt
