@@ -240,6 +240,8 @@ void InitGame(int argc, UBYTE *argv[])
 	}
 
 #ifdef __EMSCRIPTEN__
+	if (argc != -1)
+		PORT_ModNewGame(); /* PORT: a mod's start (platform/web/web_debug.c) */
 	PORT_DebugHook(); /* PORT: ?scene= / page jump requests (platform/web/web_debug.c) */
 #endif
 

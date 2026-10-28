@@ -56,10 +56,13 @@ OBJS := $(patsubst $(ENGINE)/%.C,$(OBJDIR)/engine/%.o,$(ENGINE_SRC)) \
 
 all: $(OUT)
 
-$(OUT): $(OBJS) shell.html loader.js scenes.json vendor/fflate.js
+MODKIT := $(wildcard ../../modkit/src/*.ts)
+
+$(OUT): $(OBJS) shell.html loader.js mods.js scenes.json vendor/fflate.js $(MODKIT)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS)
-	cp loader.js scenes.json build/
+	cp loader.js mods.js scenes.json build/
 	@mkdir -p build/vendor && cp vendor/*.js build/vendor/
+	node ../../modkit/strip.mjs build/modkit   # the mod builder, as plain JS (Node 22.13+)
 
 $(OBJDIR)/engine/%.o: $(ENGINE)/%.C web_hooks.h web_compat.h
 	@mkdir -p $(dir $@)

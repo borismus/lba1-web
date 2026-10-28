@@ -94,6 +94,7 @@ char *ultoa(unsigned long value, char *buf, int radix);
  * conflict with the void definition (an error in clang) */
 void PORT_Diag(const char *fmt, ...);
 void PORT_DebugHook(void);
+void PORT_ModNewGame(void); /* web_debug.c: a mod's start, on "New game" */
 int PORT_DebugAutoStart(void);
 int PORT_DebugLogo(void);
 int PORT_Feature(const char *name);

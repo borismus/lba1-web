@@ -14,10 +14,6 @@ const LBA = (() => {
   const HQRS = ['anim', 'body', 'file3d', 'invobj', 'lba_bll', 'lba_brk', 'lba_gri',
     'midi_mi', 'midi_sb', 'ress', 'samples', 'scene', 'sprites', 'text'];
   const REQUIRED = HQRS.map(n => n + '.hqr').concat(['setup.lst']);
-  // a mod build's own files, next to the game's (docs/MODS.md): the engine
-  // features it asks for, and its heroes' models per scene. Until the page
-  // builds mods itself, a folder built by levelkit can be dropped in whole.
-  const OPTIONAL = ['features', 'hero.dat'];
   const VOX_LANG = { english: 'en', 'français': 'fr', francais: 'fr', deutsch: 'de' };
 
   // Copies of the game we've tested: the classic DOS files' SHA-256s (a few
@@ -26,19 +22,19 @@ const LBA = (() => {
   // its data in Common/, CommonClassic/) and the original DOS one
   // (Speedrun/Windows), which this engine, the 1994 source, needs.
   const RELEASES = [
-    { name: "GOG: Twinsen's Little Big Adventure Classic", files: {
+    { id: 'gog-classic', name: "GOG: Twinsen's Little Big Adventure Classic", files: {
       'ress.hqr': '40fda5776f3f0da976595d47722aed5a8cf25d8536b1064c9851a8f5f0631267',
       'scene.hqr': 'a320c359fd41ef2b1be93f885a840615c316c83be50e5e81e90f93dbb647c859',
       'text.hqr': 'ec60aa7323a2e8daa270bda71db9db1dff4062b2048c37dc7ff9f6c641667cd2' } },
   ];
   const hex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-  // -> the release's name, or null: a copy we haven't tested (we try anyway)
+  // -> the release ({id, name}), or null: a copy we haven't tested (we try anyway)
   async function identify(game) {
     const sums = {};
     for (const n of ['ress.hqr', 'scene.hqr', 'text.hqr'])
       sums[n] = hex(await crypto.subtle.digest('SHA-256', await game.data[n].read()));
     const r = RELEASES.find(r => Object.entries(r.files).every(([n, h]) => sums[n] === h));
-    return r ? r.name : null;
+    return r || null;
   }
 
   const base = p => p.slice(p.lastIndexOf('/') + 1).toLowerCase();
@@ -46,7 +42,7 @@ const LBA = (() => {
   // which entries we might need: the game's files, its voices, the music
   const wanted = p => {
     const b = base(p);
-    return REQUIRED.includes(b) || OPTIONAL.includes(b) || b === 'lba.cfg' || /\.vox$/.test(b) || /^lba1-\d\d\.mp3$/.test(b);
+    return REQUIRED.includes(b) || b === 'lba.cfg' || /\.vox$/.test(b) || /^lba1-\d\d\.mp3$/.test(b);
   };
 
   // ── sources ─────────────────────────────────────────────────────────────
@@ -54,7 +50,7 @@ const LBA = (() => {
 
   // a zip, read in place: its directory (at the end), then only the entries
   // we need, so a whole zipped install (GOG's is 700 MB) never sits in memory
-  async function fromZip(file, progress) {
+  async function fromZip(file, progress, want = wanted) {
     progress(`Opening ${file.name}…`);
     const slice = async (at, n) => new DataView(await file.slice(at, at + n).arrayBuffer());
     const tail = Math.min(file.size, 65536 + 22);
@@ -89,7 +85,7 @@ const LBA = (() => {
         x += 4 + len;
       }
       p += 46 + nlen + xlen + clen;
-      if (name.endsWith('/') || !wanted(name)) continue;
+      if (name.endsWith('/') || !want(name)) continue;
       out.push({ path: file.name + '/' + name, size, read: async () => {
         const h = await slice(at, 30);
         const start = at + 30 + h.getUint16(26, true) + h.getUint16(28, true);
@@ -105,11 +101,11 @@ const LBA = (() => {
   }
 
   // dropped items: files and whole folders (DataTransferItem.webkitGetAsEntry)
-  async function fromDrop(items) {
+  async function fromDrop(items, want = wanted) {
     const out = [];
     const walk = async (entry, path) => {
       if (entry.isFile) {
-        if (wanted(path) || /\.zip$/i.test(path))
+        if (want(path) || /\.zip$/i.test(path))
           out.push({ path, file: await new Promise((ok, fail) => entry.file(ok, fail)) });
       } else if (entry.isDirectory) {
         const reader = entry.createReader();
@@ -131,11 +127,11 @@ const LBA = (() => {
   const fromInput = files => [...files].map(f => ({ path: f.webkitRelativePath || f.name, file: f }));
 
   // raw {path, file} picks (zips among them unpacked) -> entries
-  async function collect(picks, progress) {
+  async function collect(picks, progress, want = wanted) {
     const entries = [];
     for (const { path, file } of picks) {
-      if (/\.zip$/i.test(path)) entries.push(...await fromZip(file, progress));
-      else if (wanted(path)) entries.push(fromFile(file, path));
+      if (/\.zip$/i.test(path)) entries.push(...await fromZip(file, progress, want));
+      else if (want(path)) entries.push(fromFile(file, path));
     }
     return entries;
   }
@@ -205,7 +201,6 @@ const LBA = (() => {
       progress(`Copying the game files… ${Math.round(100 * i++ / names.length)}%`);
       put(n, await game.data[n].read());
     }
-    for (const n of OPTIONAL) if (game.data[n]) put(n, await game.data[n].read());
     const cfg = game.data['lba.cfg'] ? latin1(await game.data['lba.cfg'].read()) : null;
     const text = config(cfg);
     put('lba.cfg', fromLatin1(text));
@@ -223,8 +218,9 @@ const LBA = (() => {
       put('music/' + nn + '.mp3', await game.music[nn].read());
     }
     const release = await identify(game);
-    put('.installed', fromLatin1(JSON.stringify({ release, voices: vox.length, music: tracks.length, at: Date.now() })));
-    return { release, voices: vox.length, music: tracks.length };
+    const info = { release: release && release.name, releaseId: release && release.id, voices: vox.length, music: tracks.length, at: Date.now() };
+    put('.installed', fromLatin1(JSON.stringify(info)));
+    return info;
   }
 
   const installed = FS => { try { return JSON.parse(latin1(FS.readFile('/lba/.installed'))); } catch (e) { return null; } };
@@ -241,5 +237,5 @@ const LBA = (() => {
     rm('/lba');
   }
 
-  return { fromDrop, fromInput, collect, find, install, installed, forget, REQUIRED, RELEASES };
+  return { fromDrop, fromInput, collect, find, install, installed, forget, latin1, fromLatin1, REQUIRED, RELEASES };
 })();

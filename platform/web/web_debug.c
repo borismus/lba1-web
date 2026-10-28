@@ -161,6 +161,48 @@ void PORT_DebugHook(void)
 	}
 }
 
+/* A mod's start (docs/MODS.md), from the page (Module.modStart: scene, at
+ * x/y/z, and auto: straight in, after the Adeline logo, for a mod not yet
+ * played): where "New game" puts the hero. */
+static WORD ModScene = -1, ModX, ModY, ModZ, ModAt = 0;
+
+void PORT_ModNewGame(void)
+{
+	if (ModScene == -1 OR PendingScene != -1)
+		return;
+	if (ModAt)
+		lba_jump_at(ModScene, ModX, ModY, ModZ);
+	else
+		lba_jump(ModScene);
+}
+
+static void ModStartFromPage(void)
+{
+	int v[5];
+
+	if (!EM_ASM_INT({
+		var s = Module.modStart;
+		if (!s || typeof s.scene !== 'number') return 0;
+		var at = Array.isArray(s.at) && s.at.length == 3;
+		HEAP32[$0 >> 2] = s.scene;
+		HEAP32[($0 >> 2) + 1] = at ? 1 : 0;
+		for (var i = 0; i < 3; i++) HEAP32[($0 >> 2) + 2 + i] = at ? s.at[i] : 0;
+		return s.auto ? 2 : 1;
+	}, v))
+		return;
+	ModScene = (WORD)v[0];
+	ModAt = (WORD)v[1];
+	ModX = (WORD)v[2];
+	ModY = (WORD)v[3];
+	ModZ = (WORD)v[4];
+	if (EM_ASM_INT({ return Module.modStart.auto ? 1 : 0; }))
+	{
+		PORT_ModNewGame();
+		AutoStart = 1;
+		ShowLogo = 1;
+	}
+}
+
 /* URL parameters, read once at boot (main_sdl.c). */
 void PORT_DebugInitFromURL(void)
 {
@@ -221,6 +263,8 @@ void PORT_DebugInitFromURL(void)
 		lba_set_chapter(chapter);
 	if (all)
 		lba_give_all();
+	if (scene < 0)
+		ModStartFromPage();
 }
 
 /* Hero state for debugging jumps: x, y, z, body, genbody, camera cube x/y/z,

@@ -34,12 +34,20 @@ untested. GOG's *Original Edition* add-on (a DLC of Classic, its own
 installer) installs into the main game's folder and is not a whole game on
 its own. Steam: untested.
 
+**Mods** ([docs/MODS.md](../../docs/MODS.md)): once the game is in, the
+Play screen takes a mod (its zip or folder). The page checks the mod holds
+none of the game's own data, builds it from your copy of the game
+(`modkit/`, in the browser), and keeps the build and the mod's own saves in
+`mods/<id>/`; the game's files stay as they were. One mod at a time: adding
+another replaces it.
+
 Controls: arrows to walk, Space for the behaviour's action, Tab or Ctrl for
 the behaviour menu, 5–8 to switch behaviour directly, Esc for the menu.
 
 ## Building
 
-Needs [Emscripten](https://emscripten.org).
+Needs [Emscripten](https://emscripten.org) and Node 22.13+ (modkit's
+TypeScript is shipped as plain JS by Node's own type stripping).
 
 ```sh
 cd platform/web
@@ -55,8 +63,8 @@ Deploy `build/` (without `build/obj/`) to any static host.
   recorder (the game's picture and sound to a video file).
 - `?scene=N[&at=x,y,z][&chapter=C][&items=all][&flags=F,F...][&body=B][&logo=1][&rec=1]`
   starts a new game in scene N (see `web_debug.c`).
-- `loader.js`: finding and installing the game files; `shell.html`: the
-  page; `web_music.c`: the soundtrack; `web_sys.c`: file system glue;
+- `loader.js`: finding and installing the game files; `mods.js`: adding,
+  building and storing a mod; `shell.html`: the page; `web_music.c`: the soundtrack; `web_sys.c`: file system glue;
   `web_hooks.c`: yielding to the browser inside the engine's busy-waits.
 - `vendor/fflate.js` (MIT, fflate 0.8.2): inflating zips in browsers
   without `DecompressionStream`.

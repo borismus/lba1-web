@@ -3,8 +3,13 @@
  * shim and the engine rely on: path helpers, a case-normalizing fopen,
  * dirent-based SYS_Find*, Touch. Adapted from platform/nds/nds_sys.c.
  *
- * Game data is preloaded into /lba with lowercase names (see Makefile);
- * the engine opens files as "RESS.HQR", "vox\\EN_000.VOX", ".\\lba.cfg"...
+ * The game files are in /lba with lowercase names (loader.js); the engine
+ * opens them as "RESS.HQR", "vox\\EN_000.VOX", ".\\lba.cfg"...
+ *
+ * Playing a mod (docs/MODS.md; the page sets Module.modDir, e.g.
+ * "mods/little-big-rescue"): a file its build made is read from that folder
+ * instead (the overlay), and the saves (*.lba) live in its saves/, so a mod
+ * and the original game never see each other's.
  */
 #include <ctype.h>
 #include <stdarg.h>
@@ -33,6 +38,65 @@ static void NormPath(const char *s, char *buf, size_t size)
 	buf[i] = 0;
 }
 
+#include <emscripten.h>
+
+/* the mod being played ("" for the original), read once from the page */
+static const char *ModDir(void)
+{
+	static char dir[200];
+	static int read = 0;
+
+	if (!read)
+	{
+		read = 1;
+		EM_ASM({
+			var d = (typeof Module.modDir === 'string') ? Module.modDir : '';
+			stringToUTF8(d, $0, $1);
+		}, dir, (int)sizeof(dir));
+	}
+	return dir;
+}
+
+static int IsSave(const char *path)
+{
+	size_t n = strlen(path);
+
+	return n >= 4 && !strcmp(path + n - 4, ".lba");
+}
+
+/* buf (normalized) -> where it is while a mod is played: its saves in the
+ * mod's saves/, a file the mod's build made in the mod's folder (when
+ * reading), anything else where it was */
+static void ModPath(char *buf, size_t size, int reading)
+{
+	const char *mod = ModDir();
+	char alt[280];
+	FILE *f;
+
+	if (!mod[0])
+		return;
+	if (IsSave(buf))
+	{
+		const char *name = strrchr(buf, '/');
+
+		snprintf(alt, sizeof(alt), "%s/saves", mod);
+		mkdir(alt, 0777);
+		snprintf(alt, sizeof(alt), "%s/saves/%s", mod, name ? name + 1 : buf);
+	}
+	else
+	{
+		if (!reading)
+			return;
+		snprintf(alt, sizeof(alt), "%s/%s", mod, buf);
+		f = fopen(alt, "rb");
+		if (!f)
+			return;
+		fclose(f);
+	}
+	strncpy(buf, alt, size - 1);
+	buf[size - 1] = 0;
+}
+
 FILE *WEB_fopen(const char *name, const char *mode)
 {
 	char buf[280];
@@ -40,6 +104,7 @@ FILE *WEB_fopen(const char *name, const char *mode)
 	if (!name)
 		return NULL;
 	NormPath(name, buf, sizeof(buf));
+	ModPath(buf, sizeof(buf), mode && mode[0] == 'r' && !strchr(mode, '+'));
 	return fopen(buf, mode);
 }
 
@@ -48,6 +113,7 @@ int WEB_remove(const char *name)
 	char buf[280];
 
 	NormPath(name, buf, sizeof(buf));
+	ModPath(buf, sizeof(buf), 0);
 	return remove(buf);
 }
 
@@ -56,6 +122,7 @@ void Touch(UBYTE *filename)
 	char buf[280];
 
 	NormPath((const char *)filename, buf, sizeof(buf));
+	ModPath(buf, sizeof(buf), 0);
 	utime(buf, NULL);
 }
 
@@ -211,6 +278,7 @@ int SYS_FindFirst(const char *pattern, unsigned attr, SYS_FileInfo *info)
 	(void)attr;
 	SYS_FindClose(info);
 	NormPath(pattern, norm, sizeof(norm));
+	ModPath(norm, sizeof(norm), 1); /* a mod's saves: in its saves/ */
 	slash = strrchr(norm, '/');
 	if (slash)
 	{
@@ -273,9 +341,9 @@ void PORT_Diag(const char *fmt, ...)
 	va_end(ap);
 }
 
-/* Engine features a mod set asks for (docs/MODS.md): its build writes their
- * names, one per line, to "features" next to the game files. No file (the
- * plain game): every feature off, the engine as the original. */
+/* Engine features a mod asks for (docs/MODS.md): its build writes their
+ * names, one per line, to "features" in its folder. No file (the plain
+ * game): every feature off, the engine as the original. */
 int PORT_Feature(const char *name)
 {
 	static char list[1024];
@@ -285,7 +353,7 @@ int PORT_Feature(const char *name)
 
 	if (!read)
 	{
-		FILE *f = fopen("features", "rb");
+		FILE *f = WEB_fopen("features", "rb");
 
 		read = 1;
 		if (f)
@@ -319,7 +387,7 @@ int PORT_HeroFile3D(int scene)
 
 	if (count < 0)
 	{
-		FILE *f = PORT_Feature("hero-models") ? fopen("hero.dat", "rb") : NULL;
+		FILE *f = PORT_Feature("hero-models") ? WEB_fopen("hero.dat", "rb") : NULL;
 
 		count = 0;
 		if (f)

@@ -45,6 +45,20 @@
   .small { font-size: 12.5px; }
   kbd { display: inline-block; min-width: 22px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px;
     border-radius: 4px; background: var(--panel); font: 12px/1.6 ui-monospace, Menlo, monospace; color: var(--text); }
+  /* mods, on the Play screen */
+  #mods { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line); text-align: left; }
+  #mods h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+  .mod { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .mod[hidden] { display: none; }
+  .mod b { color: var(--text); font-size: 16px; }
+  .mod .ver { color: var(--muted); margin-left: 6px; font-size: 12.5px; }
+  .mod p { margin: 6px 0; }
+  .mod .buttons { justify-content: flex-start; margin-top: 10px; }
+  #moddrop { border: 1.5px dashed var(--line); border-radius: 10px; padding: 12px 14px; margin-top: 10px; color: var(--muted); font-size: 13px; transition: .15s; }
+  #moddrop.over { border-color: var(--accent); background: rgba(224, 179, 74, .06); }
+  #moddrop .buttons { justify-content: flex-start; margin-top: 8px; }
+  #modprogress { min-height: 1.4em; margin-top: 8px; }
+  #moderror { color: var(--bad); }
   .keys { text-align: left; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 14px auto; width: max-content; }
 
   /* developer panel (?dev=1) */
@@ -104,6 +118,29 @@
         <h1>Little Big Adventure</h1>
         <div class="buttons"><button class="btn primary" id="playbtn">▶ Play</button></div>
         <p class="small" id="playinfo"></p>
+        <div id="mods">
+          <h2>Mod</h2>
+          <div class="mod" id="modcard" hidden>
+            <b id="modname"></b><span class="ver" id="modver"></span>
+            <p id="moddesc"></p>
+            <p class="small" id="modnote"></p>
+            <div class="buttons">
+              <button class="btn primary" id="modplay">▶ Play</button>
+              <button class="btn" id="modremove">Remove</button>
+            </div>
+          </div>
+          <div id="moddrop">
+            <span id="moddroptext">Drop a mod here (its zip or folder) to play it with your copy of the game. The game itself stays as it is.</span>
+            <div class="buttons">
+              <button class="btn" id="pickmod">Choose mod zip…</button>
+              <button class="btn" id="pickmoddir">Choose mod folder…</button>
+            </div>
+          </div>
+          <div id="modprogress"></div>
+          <div id="moderror"></div>
+          <input type="file" id="modinput" accept=".zip,application/zip" hidden>
+          <input type="file" id="moddirinput" webkitdirectory hidden>
+        </div>
       </div>
     </div>
 
@@ -144,6 +181,7 @@
 
 <script src="vendor/fflate.js"></script>
 <script src="loader.js"></script>
+<script src="mods.js"></script>
 <script>
   const params = new URLSearchParams(location.search);
   const $ = id => document.getElementById(id);
@@ -176,7 +214,14 @@
     monitorRunDependencies: n => { if (!n) Module.setStatus(''); },
   };
 
-  function start() {
+  // mod: a stored mod's description (mods.js), or none for the original game
+  function start(mod) {
+    if (mod) {
+      Module.modDir = 'mods/' + mod.id;    // web_sys.c: the mod's files and saves
+      // web_debug.c: "New game" starts there; the first time, straight in
+      if (mod.start) Module.modStart = { scene: mod.start.scene, at: mod.start.at, auto: !MODS.hasSaves(FS, mod.id) };
+      document.title = mod.name + ' · Little Big Adventure';
+    }
     $('setup').hidden = $('play').hidden = true;
     Module.setStatus('');
     Module.removeRunDependency('game');
@@ -208,12 +253,14 @@
   const drop = $('drop');
   for (const t of ['dragenter', 'dragover'])
     window.addEventListener(t, e => { if (!$('setup').hidden) { e.preventDefault(); drop.classList.add('over'); } });
-  window.addEventListener('dragleave', e => { if (!e.relatedTarget) drop.classList.remove('over'); });
+  for (const t of ['dragenter', 'dragover'])
+    window.addEventListener(t, e => { if (!$('play').hidden) { e.preventDefault(); $('moddrop').classList.add('over'); } });
+  window.addEventListener('dragleave', e => { if (!e.relatedTarget) { drop.classList.remove('over'); $('moddrop').classList.remove('over'); } });
   window.addEventListener('drop', e => {
-    if ($('setup').hidden) return;
-    e.preventDefault();
     drop.classList.remove('over');
-    take(LBA.fromDrop(e.dataTransfer.items));
+    $('moddrop').classList.remove('over');
+    if (!$('setup').hidden) { e.preventDefault(); take(LBA.fromDrop(e.dataTransfer.items)); }
+    else if (!$('play').hidden) { e.preventDefault(); addMod(LBA.fromDrop(e.dataTransfer.items, () => true)); }
   });
   $('pickdir').onclick = () => $('dirinput').click();
   $('pickzip').onclick = () => $('zipinput').click();
@@ -225,9 +272,66 @@
     Module.setStatus('');
     $('playinfo').textContent = `${have.release || 'Your copy of the game'}, saved in this browser${have.voices ? '' : ' (no voices found)'}${have.music ? '' : ' (no music found)'}.`;
     $('play').hidden = false;
+    showMod();
     $('playbtn').focus();
   }
-  $('playbtn').onclick = start;
+  $('playbtn').onclick = () => start(null);
+
+  // ── a mod (one at a time) ───────────────────────────────────────────────
+  const sync = () => new Promise((ok, fail) => FS.syncfs(false, e => e ? fail(e) : ok()));
+  function showMod() {
+    const mod = MODS.list(FS)[0];
+    $('modcard').hidden = !mod;
+    $('moddroptext').textContent = mod
+      ? 'Drop another mod here to play that one instead (this one and its saves are removed).'
+      : 'Drop a mod here (its zip or folder) to play it with your copy of the game. The game itself stays as it is.';
+    if (!mod) return;
+    $('modname').textContent = mod.name;
+    $('modver').textContent = mod.version ? 'v' + mod.version : '';
+    $('moddesc').textContent = mod.description;
+    $('modnote').textContent = [mod.untested && `Untested with your copy: ${mod.untested}`, mod.credits,
+      MODS.hasSaves(FS, mod.id) && 'Its saves are kept apart from the game\'s'].filter(Boolean).map(t => t.replace(/\.?$/, '.')).join(' ');
+  }
+  const modProgress = t => { $('modprogress').textContent = t; $('moderror').textContent = ''; };
+  async function addMod(picks) {
+    try {
+      modProgress('Reading the mod…');
+      const files = await MODS.read(picks, modProgress);
+      const t0 = performance.now();
+      const mod = await MODS.add(FS, files, LBA.installed(FS), modProgress);
+      modProgress('Saving it in your browser…');
+      await sync();
+      modProgress(`Built ${mod.name} in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
+      showMod();
+      $('modplay').focus();
+    } catch (e) {
+      console.warn(e);
+      $('modprogress').textContent = '';
+      $('moderror').textContent = e.message || String(e);
+    }
+  }
+  $('pickmod').onclick = () => $('modinput').click();
+  $('pickmoddir').onclick = () => $('moddirinput').click();
+  $('modinput').onchange = e => { addMod(Promise.resolve(LBA.fromInput(e.target.files))); e.target.value = ''; };
+  $('moddirinput').onchange = e => { addMod(Promise.resolve(LBA.fromInput(e.target.files))); e.target.value = ''; };
+  $('modplay').onclick = async () => {
+    try {
+      let mod = MODS.list(FS)[0];
+      if (mod.build !== undefined) {
+        const fresh = await MODS.refresh(FS, mod, LBA.installed(FS), modProgress);
+        if (fresh !== mod) { await sync(); mod = fresh; }
+      }
+      start(mod);
+    } catch (e) { console.warn(e); $('moderror').textContent = e.message || String(e); }
+  };
+  $('modremove').onclick = async () => {
+    const mod = MODS.list(FS)[0];
+    if (!confirm(`Remove ${mod.name} and its saves from this browser? The game itself stays.`)) return;
+    MODS.remove(FS, mod.id);
+    await sync();
+    modProgress('');
+    showMod();
+  };
 
   // saves (and the game's config) are written into /lba: store them
   let syncing = false;

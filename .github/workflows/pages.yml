@@ -1,5 +1,5 @@
 # Builds the web build (platform/web) and publishes it to GitHub Pages: the
-# page, the engine (.js, .wasm) and the loader. No game data: the player
+# page, the engine (.js, .wasm), the loader and the mod builder. No game data: the player
 # drops in their own copy of the game.
 name: Pages
 
@@ -22,6 +22,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4     # modkit's TypeScript -> JS (Node's own type stripping)
+        with:
+          node-version: 22
       - uses: mymindstorm/setup-emsdk@v14
         with:
           version: 6.0.12
@@ -32,7 +35,7 @@ jobs:
           mkdir site
           cp -r platform/web/build/. site/
           rm -rf site/obj
-          ls -la site site/vendor
+          ls -la site site/vendor site/modkit
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
