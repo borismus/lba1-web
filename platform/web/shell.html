@@ -356,9 +356,11 @@
     const p = url.startsWith(here) ? url.slice(here.length) : url;
     return location.origin + location.pathname + '?mod=' + encodeURIComponent(p).replace(/%2F/g, '/').replace(/%3A/g, ':');
   }
-  async function fetchMod() {
+  // add the mod at src (a link's ?mod=, or a known mod's url); play: then
+  // start it (a click on a known mod: that click also lets the sound start)
+  async function fetchMod(src = modUrl, play = false) {
     let url;
-    try { url = new URL(modUrl, location.href).href; } catch (e) { $('moderror').textContent = `The link's mod address isn't a URL: ${modUrl}`; return; }
+    try { url = new URL(src, location.href).href; } catch (e) { $('moderror').textContent = `The link's mod address isn't a URL: ${src}`; return; }
     try {
       modProgress('Downloading the mod…');
       let r;
@@ -370,13 +372,14 @@
       if (blob.size > MAX_MOD) throw new Error(`That mod is too big (${Math.round(blob.size / 1048576)} MB; at most ${MAX_MOD >> 20} MB).`);
       const sum = await sha256(await blob.arrayBuffer());
       const cur = MODS.list(FS)[0];
-      if (cur && cur.source === url && cur.sha256 === sum) { modProgress(''); showMod(); $('modplay').focus(); return; }  // built already
+      if (cur && cur.source === url && cur.sha256 === sum) { modProgress(''); showMod(); if (play) start(cur); else $('modplay').focus(); return; }  // built already
       const name = (new URL(url).pathname.split('/').pop() || 'mod').replace(/\.zip$/i, '') + '.zip';
       const files = await MODS.read([{ path: name, file: new File([blob], name) }], modProgress);
       const id = MODS.idOf(files);
       if (cur && cur.id !== id && MODS.hasSaves(FS, cur.id) &&
           !confirm(`This link plays a different mod. Adding it removes ${cur.name} and its saves from this browser. Go ahead?`)) { modProgress(''); return; }
-      await addModFiles(files, { source: url, sha256: sum });
+      const mod = await addModFiles(files, { source: url, sha256: sum });
+      if (play) start(mod);
     } catch (e) {
       console.warn(e);
       $('modprogress').textContent = '';
@@ -417,9 +420,12 @@
       by.textContent = [k.version && ' v' + k.version, k.authors.length && ' · ' + k.authors.join(', ')].filter(Boolean).join('');
       const desc = document.createElement('p'); desc.textContent = k.description;
       info.append(name, by, desc);
-      const add = document.createElement('a'); add.className = 'btn'; add.textContent = mod ? 'Play instead' : 'Add';
-      add.href = '?mod=' + encodeURIComponent(k.url).replace(/%2F/g, '/').replace(/%3A/g, ':');
-      row.append(info, add);
+      const play = document.createElement('button'); play.className = 'btn'; play.textContent = '▶ Play';
+      play.onclick = () => {
+        history.replaceState(null, '', shareLink(new URL(k.url, location.href).href));  // the address bar: a link to it
+        fetchMod(k.url, true);
+      };
+      row.append(info, play);
       $('knownlist').append(row);
     }
   }
@@ -446,6 +452,7 @@
     modProgress(`Built ${mod.name} in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
     showMod();
     $('modplay').focus();
+    return mod;
   }
   $('modlink').onclick = async () => {
     const link = shareLink(MODS.list(FS)[0].source);
