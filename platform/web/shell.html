@@ -65,6 +65,7 @@
   .btn { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line);
     border-radius: 8px; padding: 8px 14px; cursor: pointer; }
   .btn:hover { background: var(--hover); }
+  .btn:disabled { opacity: .65; cursor: default; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #1b1608; font-weight: 600; }
   #play .btn.primary { font-size: 18px; padding: 12px 34px; border-radius: 10px; }
   #progress { min-height: 1.5em; color: var(--text); }
@@ -151,9 +152,10 @@
 
     <div class="overlay" id="play" hidden>
       <div class="card">
-        <h1>Little Big Adventure</h1>
+        <h1 id="playtitle">Little Big Adventure</h1>
         <div class="buttons"><button class="btn primary" id="playbtn">▶ Play</button></div>
         <p class="small" id="playinfo"></p>
+        <p class="small" id="playorig" hidden><a href="#">Play the original game instead</a></p>
         <div id="mods">
           <h2>Mod</h2>
           <div class="mod" id="modcard" hidden>
@@ -340,9 +342,24 @@
     $('play').hidden = false;
     showMod();
     $('playbtn').focus();
-    if (modUrl) fetchMod();
+    if (modUrl) {
+      // a mod's link: the main Play plays that mod (once it's ready)
+      $('playtitle').textContent = 'A mod for Little Big Adventure';
+      $('playorig').hidden = false;
+      $('playbtn').disabled = true;
+      $('playbtn').textContent = 'Getting the mod…';
+      linked = fetchMod().then(mod => {
+        $('playbtn').disabled = false;
+        if (mod) { $('playtitle').textContent = mod.name; $('playbtn').textContent = '▶ Play'; $('modplay').hidden = true; }
+        else { $('playbtn').textContent = '▶ Play the original game'; linked = null; }
+        $('playbtn').focus();
+        return mod;
+      });
+    }
   }
-  $('playbtn').onclick = () => start(null);
+  let linked = null;  // the link's mod, once added
+  $('playbtn').onclick = async () => start(linked ? await linked : null);
+  $('playorig').onclick = e => { e.preventDefault(); history.replaceState(null, '', location.pathname); start(null); };
 
   // ── a mod (one at a time) ───────────────────────────────────────────────
   // ?mod=<url of a mod's zip> (relative to the page, or any site that lets
@@ -372,7 +389,7 @@
       if (blob.size > MAX_MOD) throw new Error(`That mod is too big (${Math.round(blob.size / 1048576)} MB; at most ${MAX_MOD >> 20} MB).`);
       const sum = await sha256(await blob.arrayBuffer());
       const cur = MODS.list(FS)[0];
-      if (cur && cur.source === url && cur.sha256 === sum) { modProgress(''); showMod(); if (play) start(cur); else $('modplay').focus(); return; }  // built already
+      if (cur && cur.source === url && cur.sha256 === sum) { modProgress(''); showMod(); if (play) start(cur); else $('modplay').focus(); return cur; }  // built already
       const name = (new URL(url).pathname.split('/').pop() || 'mod').replace(/\.zip$/i, '') + '.zip';
       const files = await MODS.read([{ path: name, file: new File([blob], name) }], modProgress);
       const id = MODS.idOf(files);
@@ -380,6 +397,7 @@
           !confirm(`This link plays a different mod. Adding it removes ${cur.name} and its saves from this browser. Go ahead?`)) { modProgress(''); return; }
       const mod = await addModFiles(files, { source: url, sha256: sum });
       if (play) start(mod);
+      return mod;
     } catch (e) {
       console.warn(e);
       $('modprogress').textContent = '';
