@@ -3,7 +3,7 @@
 A mod changes or adds to Little Big Adventure: new places, characters,
 dialogue, a story, a different hero. This document defines what a mod
 package contains and how the page builds it. It is a draft: written against
-one real mod (Little Big Rescue, the example at the end) and meant to be
+one real mod (Relentless: Zoe's Adventure, the example at the end) and meant to be
 checked against more before it's frozen.
 
 ## Principles
@@ -51,7 +51,7 @@ against the original files, and executable code of any kind.
 A zip (or a folder) with a manifest and the mod's files:
 
 ```
-little-big-rescue/
+zoes-adventure/
   mod.json              the manifest
   mod.ops               the operations, applied in order (more .ops files may be listed)
   levels/*.txt          level files (the high-level form of operations)
@@ -68,8 +68,8 @@ Nothing outside the package is read, apart from the base.
 ```json
 {
   "format": 1,
-  "id": "little-big-rescue",
-  "name": "Little Big Rescue",
+  "id": "zoes-adventure",
+  "name": "Relentless: Zoe's Adventure",
   "version": "1.0.0",
   "authors": ["Boris Smus"],
   "description": "Zoe breaks Twinsen out of the Citadel.",
@@ -88,7 +88,7 @@ Nothing outside the package is read, apart from the base.
 - `format`: this document's version. A loader refuses formats it doesn't
   know.
 - `id`: lowercase letters, digits and `-`; unique among mods. It is also the
-  namespace of everything the mod names (`@yard` is `little-big-rescue.yard`).
+  namespace of everything the mod names (`@yard` is `zoes-adventure.yard`).
 - `version`: semantic versioning (`major.minor.patch`).
 - `license`: of the mod's own content. Original game content is never part
   of a mod, so this covers only what the modder made.
@@ -267,7 +267,7 @@ do without it, and it must leave the engine exactly as it was while off.
 The builder is `modkit/` (TypeScript, no dependencies), run by the page in
 the browser; `node modkit/test/same.ts <data> <mod> <dir>` compares its
 output with the Python reference build (levelkit's `build_levels.py --mod`),
-file by file. Today it builds what Little Big Rescue uses (`body copy`,
+file by file. Today it builds what Relentless: Zoe's Adventure uses (`body copy`,
 `hero`, `level`); the rest of the operations below are the plan.
 
 Input: the base, the mod set in order. For each mod, in order: check its
@@ -309,7 +309,7 @@ A package is acceptable if:
 The page runs the same check before building, so a package that fails is
 never loaded, wherever it came from.
 
-## Example: Little Big Rescue
+## Example (Relentless: Zoe's Adventure)
 
 ```
 # mod.ops

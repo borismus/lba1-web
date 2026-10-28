@@ -107,6 +107,7 @@
         </div>
         <div id="progress"></div>
         <div id="error"></div>
+        <p id="setupmod" hidden></p>
         <p class="small">Nothing is uploaded: the game files stay in your browser, which keeps them (and your saves) for next time.</p>
         <input type="file" id="dirinput" webkitdirectory hidden>
         <input type="file" id="zipinput" accept=".zip,application/zip" multiple hidden>
@@ -126,6 +127,7 @@
             <p class="small" id="modnote"></p>
             <div class="buttons">
               <button class="btn primary" id="modplay">▶ Play</button>
+              <button class="btn" id="modlink" hidden>Copy link</button>
               <button class="btn" id="modremove">Remove</button>
             </div>
           </div>
@@ -231,6 +233,10 @@
   // ── first visit: the player's copy of the game ─────────────────────────
   function showSetup() {
     Module.setStatus('');
+    if (modUrl) {
+      $('setupmod').hidden = false;
+      $('setupmod').textContent = `This link plays a mod (${modUrl}). It needs your copy of the game first; then the mod is added.`;
+    }
     $('setup').hidden = false;
   }
   const progress = t => { $('progress').textContent = t; $('error').textContent = ''; };
@@ -242,8 +248,8 @@
       const got = await LBA.install(FS, game, progress);
       progress('Saving the game files in your browser…');
       await new Promise((ok, fail) => FS.syncfs(false, e => e ? fail(e) : ok()));
-      progress(`${got.release ? 'Found ' + got.release : "Found the game (a version we haven't tested: trying anyway)"}${got.voices ? ', with voices' : ''}${got.music ? (got.voices ? ' and music' : ', with music') : ''}. Starting…`);
-      start();
+      progress(`${got.release ? 'Found ' + got.release : "Found the game (a version we haven't tested: trying anyway)"}${got.voices ? ', with voices' : ''}${got.music ? (got.voices ? ' and music' : ', with music') : ''}. ${modUrl ? '' : 'Starting…'}`);
+      if (modUrl) { $('setup').hidden = true; showPlay(got); } else start();
     } catch (e) {
       console.warn(e);
       $('progress').textContent = '';
@@ -274,10 +280,49 @@
     $('play').hidden = false;
     showMod();
     $('playbtn').focus();
+    if (modUrl) fetchMod();
   }
   $('playbtn').onclick = () => start(null);
 
   // ── a mod (one at a time) ───────────────────────────────────────────────
+  // ?mod=<url of a mod's zip> (relative to the page, or any site that lets
+  // other sites download it: CORS) adds that mod, as dropping its zip does
+  const modUrl = params.get('mod');
+  const MAX_MOD = 64 << 20;
+  const sha256 = async buf => [...new Uint8Array(await crypto.subtle.digest('SHA-256', buf))].map(b => b.toString(16).padStart(2, '0')).join('');
+  // a link that plays the mod from url: relative when it's next to the page
+  function shareLink(url) {
+    const here = new URL('.', location.href).href;
+    const p = url.startsWith(here) ? url.slice(here.length) : url;
+    return location.origin + location.pathname + '?mod=' + encodeURIComponent(p).replace(/%2F/g, '/').replace(/%3A/g, ':');
+  }
+  async function fetchMod() {
+    let url;
+    try { url = new URL(modUrl, location.href).href; } catch (e) { $('moderror').textContent = `The link's mod address isn't a URL: ${modUrl}`; return; }
+    try {
+      modProgress('Downloading the mod…');
+      let r;
+      try { r = await fetch(url); } catch (e) {
+        throw new Error(`Couldn't download the mod from ${url}. The site may not allow other pages to download it (CORS), or it's offline.`);
+      }
+      if (!r.ok) throw new Error(`Couldn't download the mod from ${url} (${r.status}).`);
+      const blob = await r.blob();
+      if (blob.size > MAX_MOD) throw new Error(`That mod is too big (${Math.round(blob.size / 1048576)} MB; at most ${MAX_MOD >> 20} MB).`);
+      const sum = await sha256(await blob.arrayBuffer());
+      const cur = MODS.list(FS)[0];
+      if (cur && cur.source === url && cur.sha256 === sum) { modProgress(''); showMod(); $('modplay').focus(); return; }  // built already
+      const name = (new URL(url).pathname.split('/').pop() || 'mod').replace(/\.zip$/i, '') + '.zip';
+      const files = await MODS.read([{ path: name, file: new File([blob], name) }], modProgress);
+      const id = MODS.idOf(files);
+      if (cur && cur.id !== id && MODS.hasSaves(FS, cur.id) &&
+          !confirm(`This link plays a different mod. Adding it removes ${cur.name} and its saves from this browser. Go ahead?`)) { modProgress(''); return; }
+      await addModFiles(files, { source: url, sha256: sum });
+    } catch (e) {
+      console.warn(e);
+      $('modprogress').textContent = '';
+      $('moderror').textContent = e.message || String(e);
+    }
+  }
   const sync = () => new Promise((ok, fail) => FS.syncfs(false, e => e ? fail(e) : ok()));
   function showMod() {
     const mod = MODS.list(FS)[0];
@@ -289,6 +334,7 @@
     $('modname').textContent = mod.name;
     $('modver').textContent = mod.version ? 'v' + mod.version : '';
     $('moddesc').textContent = mod.description;
+    $('modlink').hidden = !mod.source;
     $('modnote').textContent = [mod.untested && `Untested with your copy: ${mod.untested}`, mod.credits,
       MODS.hasSaves(FS, mod.id) && 'Its saves are kept apart from the game\'s'].filter(Boolean).map(t => t.replace(/\.?$/, '.')).join(' ');
   }
@@ -296,20 +342,28 @@
   async function addMod(picks) {
     try {
       modProgress('Reading the mod…');
-      const files = await MODS.read(picks, modProgress);
-      const t0 = performance.now();
-      const mod = await MODS.add(FS, files, LBA.installed(FS), modProgress);
-      modProgress('Saving it in your browser…');
-      await sync();
-      modProgress(`Built ${mod.name} in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
-      showMod();
-      $('modplay').focus();
+      await addModFiles(await MODS.read(picks, modProgress));
     } catch (e) {
       console.warn(e);
       $('modprogress').textContent = '';
       $('moderror').textContent = e.message || String(e);
     }
   }
+  // check, build and store a package (throws for the player)
+  async function addModFiles(files, from) {
+    const t0 = performance.now();
+    const mod = await MODS.add(FS, files, LBA.installed(FS), modProgress, from);
+    modProgress('Saving it in your browser…');
+    await sync();
+    modProgress(`Built ${mod.name} in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
+    showMod();
+    $('modplay').focus();
+  }
+  $('modlink').onclick = async () => {
+    const link = shareLink(MODS.list(FS)[0].source);
+    try { await navigator.clipboard.writeText(link); modProgress('Link copied: ' + link); }
+    catch (e) { prompt('The link to this mod:', link); }
+  };
   $('pickmod').onclick = () => $('modinput').click();
   $('pickmoddir').onclick = () => $('moddirinput').click();
   $('modinput').onchange = e => { addMod(Promise.resolve(LBA.fromInput(e.target.files))); e.target.value = ''; };

@@ -58,11 +58,13 @@ all: $(OUT)
 
 MODKIT := $(wildcard ../../modkit/src/*.ts)
 
-$(OUT): $(OBJS) shell.html loader.js mods.js scenes.json vendor/fflate.js $(MODKIT)
+$(OUT): $(OBJS) shell.html loader.js mods.js scenes.json vendor/fflate.js $(MODKIT) $(shell find ../../mods -type f)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS)
 	cp loader.js mods.js scenes.json build/
 	@mkdir -p build/vendor && cp vendor/*.js build/vendor/
 	node ../../modkit/strip.mjs build/modkit   # the mod builder, as plain JS (Node 22.13+)
+	@mkdir -p build/mods   # the repo's mods, as zips next to the page: ?mod=mods/<id>.zip
+	for d in ../../mods/*/; do n=$$(basename $$d); rm -f build/mods/$$n.zip; (cd ../../mods && zip -qrX - $$n -x '*.DS_Store') > build/mods/$$n.zip; done
 
 $(OBJDIR)/engine/%.o: $(ENGINE)/%.C web_hooks.h web_compat.h
 	@mkdir -p $(dir $@)

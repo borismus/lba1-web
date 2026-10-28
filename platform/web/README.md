@@ -41,6 +41,15 @@ none of the game's own data, builds it from your copy of the game
 `mods/<id>/`; the game's files stay as they were. One mod at a time: adding
 another replaces it.
 
+A link can carry a mod: `?mod=<url of its zip>` downloads it, asks for the
+game first if this browser doesn't have it, then builds the mod (once: the
+same zip again is played from the stored build). The URL is relative to the
+page, or on any site that allows downloads from other pages (CORS),
+such as raw.githubusercontent.com for a public repo. The build
+puts this repo's mods next to the page as `mods/<id>.zip`, so
+`?mod=mods/zoes-adventure.zip` works wherever the page is hosted. A mod
+added from a link has a "Copy link" button.
+
 Controls: arrows to walk, Space for the behaviour's action, Tab or Ctrl for
 the behaviour menu, 5–8 to switch behaviour directly, Esc for the menu.
 

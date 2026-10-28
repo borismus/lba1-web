@@ -13,7 +13,14 @@ const MODS = (() => {
   const BUILD = 1;  // bump when modkit's output changes: stored builds are redone
   const junk = p => /(^|\/)(__MACOSX|\.DS_Store|Thumbs\.db)(\/|$)/.test(p);
   let kit = null;
-  const modkit = async () => kit || (kit = await import('./modkit/index.js'));
+  // (a few tries: a busy server can drop one of its many module requests)
+  async function modkit() {
+    for (let i = 0; !kit; i++) {
+      try { kit = await import('./modkit/index.js' + (i ? '?' + i : '')); }
+      catch (e) { if (i === 2) throw new Error("Couldn't load the mod builder: " + e.message); await new Promise(r => setTimeout(r, 500)); }
+    }
+    return kit;
+  }
 
   const exists = (FS, p) => { try { FS.stat(p); return true; } catch (e) { return false; } };
   const mkdirs = (FS, p) => { let d = ''; for (const part of p.split('/').filter(Boolean)) { d += '/' + part; if (!exists(FS, d)) FS.mkdir(d); } };
@@ -70,7 +77,7 @@ const MODS = (() => {
       start = { scene, at: Array.isArray(s.at) && s.at.length === 3 ? s.at.map(Number) : null };
     }
     return { id: manifest.id, name: manifest.name || manifest.id, version: manifest.version || '',
-             description: manifest.description || '', credits: manifest.credits || '', start, build: BUILD };
+             description: manifest.description || '', credits: [].concat(manifest.credits || []).join('. '), start, build: BUILD };
   }
 
   // -> the manifest, or throws an Error for the player
@@ -88,8 +95,12 @@ const MODS = (() => {
     return m;
   }
 
-  // check and build a package, then store it: -> its description
-  async function add(FS, files, installed, progress) {
+  // the id a package says it has (null: none, or no valid mod.json)
+  const idOf = files => { try { return json(files.get('mod.json')).id || null; } catch (e) { return null; } };
+
+  // check and build a package, then store it: -> its description. from:
+  // where it came from, for a link to it ({source: url, sha256}), if online
+  async function add(FS, files, installed, progress, from = {}) {
     const m = validate(files, installed);
     const mk = await modkit();
     progress('Checking the mod has none of the game\'s own data in it…');
@@ -105,6 +116,7 @@ const MODS = (() => {
     const built = mk.build(game, files);
     const info = describe(m, Object.fromEntries(built.scenes));
     info.untested = m.untested || '';
+    Object.assign(info, from);
     // one mod at a time: another mod goes (with its saves); the same mod
     // again (an update) keeps its saves
     for (const other of list(FS)) if (other.id !== m.id) rmrf(FS, `${ROOT}/${other.id}`);
@@ -121,7 +133,7 @@ const MODS = (() => {
   async function refresh(FS, info, installed, progress) {
     if (info.build === BUILD) return info;
     const files = new Map(walk(FS, `${ROOT}/${info.id}/package`).map(p => [p, FS.readFile(`${ROOT}/${info.id}/package/${p}`)]));
-    return add(FS, files, installed, progress);
+    return add(FS, files, installed, progress, { source: info.source, sha256: info.sha256 });
   }
 
   function list(FS) {
@@ -137,5 +149,5 @@ const MODS = (() => {
   const remove = (FS, id) => rmrf(FS, `${ROOT}/${id}`);
   const hasSaves = (FS, id) => walk(FS, `${ROOT}/${id}/saves`).some(n => /\.lba$/i.test(n));
 
-  return { read, add, refresh, list, remove, hasSaves };
+  return { read, add, refresh, list, remove, hasSaves, idOf };
 })();

@@ -7,7 +7,7 @@
  * opens them as "RESS.HQR", "vox\\EN_000.VOX", ".\\lba.cfg"...
  *
  * Playing a mod (docs/MODS.md; the page sets Module.modDir, e.g.
- * "mods/little-big-rescue"): a file its build made is read from that folder
+ * "mods/zoes-adventure"): a file its build made is read from that folder
  * instead (the overlay), and the saves (*.lba) live in its saves/, so a mod
  * and the original game never see each other's.
  */
