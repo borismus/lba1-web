@@ -47,7 +47,7 @@
 #include <string.h>
 #include "port.h"
 #include "../audio_common.h" /* SND_VocInfo/SND_ParseVoc/SND_PitchedRate,
-                                shared with platform/nds/nds_audio.c */
+                                (from ds-lba, shared with its DS build) */
 
 /* ================================================================== */
 /* 1) Channel layer (backend-agnostic — this is what the DS reuses)   */

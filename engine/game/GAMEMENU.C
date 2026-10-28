@@ -1203,7 +1203,7 @@ void CopyBlockPhysMCGA(LONG x0, LONG y0, LONG x1, LONG y1)
 	if (y < 0)
 		y = 0;
 
-#if defined(PORT_SDL) || defined(PORT_NDS)
+#ifdef PORT_SDL
 	CopyBlockMCGA(x, y, x + 319, y + 199, Log, 0, 0, Phys); /* PORT: 0xA0000 is live VGA memory on DOS; the shims present Phys */
 #else
 	CopyBlockMCGA(x, y, x + 319, y + 199, Log, 0, 0, 0xA0000);

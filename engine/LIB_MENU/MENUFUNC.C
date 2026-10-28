@@ -425,7 +425,7 @@ void InputString(T_MENU *ptrmenu, WORD handle, WORD maxcar)
 /*══════════════════════════════════════════════════════════════════════════*/
 /* fontions evoluées */
 
-#if !defined(PORT_SDL) && !defined(PORT_NDS) /* PORT: duplicate symbol — the game overrides Message() in PERSO.C;
+#ifndef PORT_SDL /* PORT: duplicate symbol — the game overrides Message() in PERSO.C;
 					the Watcom librarian only pulled this one when unresolved */
 void Message(UBYTE *message, LONG flag)
 {
@@ -453,7 +453,7 @@ void Message(UBYTE *message, LONG flag)
 
 	CloseMenu(&menu);
 }
-#endif /* !PORT_SDL && !PORT_NDS */
+#endif /* !PORT_SDL */
 
 /*══════════════════════════════════════════════════════════════════════════*/
 /* Confirm( "Voulez-vous vraiment ?", "OUI" (RETURN), "NON"(ESC) ) ; */

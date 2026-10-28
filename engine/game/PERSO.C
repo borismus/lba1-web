@@ -14,14 +14,6 @@ ULONG SpriteMem, SampleMem, AnimMem;
 ULONG ValidPositionTimer;
 ULONG PersoInvulnerableTimer;
 
-#ifdef PORT_NDS
-/* Touch-UI mailboxes (defined in platform/nds/nds_ui.c, posted from the
- * VBlank ISR, consumed ONCE per MainLoop iteration below — logged edits
- * #29-31 in platform/sdl/PORTING_NOTES.md). */
-extern volatile WORD PORT_InjectKey;         /* one-shot scan code       */
-extern volatile WORD PORT_TouchComportement; /* 0..3 or -1               */
-extern volatile WORD PORT_TouchInvAction;    /* InventoryAction id or -1 */
-#endif
 
 // WORD	Lig=0 ;
 /*══════════════════════════════════════════════════════════════════════════*/
@@ -421,15 +413,6 @@ LONG MainLoop()
 		}
 #endif
 
-#ifdef PORT_NDS
-		/* touch UI: one-shot key injection, consumed here so a tap is
-		 * neither missed by a long frame nor fired twice (edit #29) */
-		if (PORT_InjectKey)
-		{
-			MyKey = PORT_InjectKey;
-			PORT_InjectKey = 0;
-		}
-#endif
 
 		/*-------------------------------------------------------------------------*/
 		/* gestion clavier */ /* tools */
@@ -575,23 +558,12 @@ LONG MainLoop()
 
 			InventoryAction = -1;
 			if (((MyFire & F_SHIFT)
-#ifdef PORT_NDS
-					OR(PORT_TouchInvAction != -1)
-#endif
 					)
 					AND(ListObjet[NUM_PERSO].Body != -1)
 						AND(ListObjet[NUM_PERSO].Move == MOVE_MANUAL))
 			{
 				SaveTimer();
 				TestRestoreModeSVGA(TRUE);
-#ifdef PORT_NDS
-				/* touch UI: run the selected action through the very same
-				 * switch a real inventory selection uses, without opening
-				 * the inventory (edit #31) */
-				if (PORT_TouchInvAction != -1)
-					InventoryAction = PORT_TouchInvAction;
-				else
-#endif
 				Inventory();
 				switch (InventoryAction)
 				{
@@ -743,9 +715,6 @@ LONG MainLoop()
 				RestoreTimer();
 				AffScene(TRUE);
 			}
-#ifdef PORT_NDS
-			PORT_TouchInvAction = -1; /* consumed or dropped (edit #31) */
-#endif
 
 			if ((MyFire & F_CTRL)
 					AND(ListObjet[NUM_PERSO].Body != -1)
@@ -770,20 +739,6 @@ LONG MainLoop()
 				AffScene(TRUE);
 			}
 
-#ifdef PORT_NDS
-			/* touch UI: direct behaviour switch — same call the life-script
-			 * SET_COMPORTEMENT opcode makes (GERELIFE.C), so no menu flash
-			 * and no full redraw (edit #30) */
-			if (PORT_TouchComportement != -1)
-			{
-				if ((ListObjet[NUM_PERSO].Body != -1)
-						AND(ListObjet[NUM_PERSO].Move == MOVE_MANUAL))
-				{
-					SetComportement(PORT_TouchComportement);
-				}
-				PORT_TouchComportement = -1;
-			}
-#endif
 
 			if (MyKey == K_1) // balle magique
 			{
@@ -1503,16 +1458,6 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 
 	// déclarations HQR ressource
 
-#ifdef PORT_NDS
-	/* PORT: the DS never looks at the XMI bytes — nds_music.c streams a
-	 * pre-rendered track and takes the entry number off NumXmi — so this
-	 * resource would be 32000 + RECOVER_AREA of pure waste. Worse, it is
-	 * claimed HERE, before the Malloc(-1) probe further down sizes
-	 * SpriteMem/AnimMem/SampleMem from whatever is left: loading it shrank
-	 * all three pools. Leave HQR_Midi NULL (AMBIANCE.C skips the HQR_Get)
-	 * and keep Midi_Driver_Enable on, which is what gates the jingles. */
-	HQR_Midi = 0;
-#else
 	if (Midi_Driver_Enable)
 	{
 		if (MidiFM)
@@ -1540,7 +1485,6 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 
 		//		InitPathMidiSampleFile( PATH_RESSOURCE ) ;
 	}
-#endif
 
 	// presentation
 
@@ -1618,11 +1562,7 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 	 * its whole display loop while HQR_Del_Bloc slides the surviving blocks
 	 * down underneath it. That is the pickup object that stops rendering.
 	 * 64 KB makes it resident; the slot count already covers 29. */
-#ifdef PORT_NDS
-	InventoryObj = HQR_Init_Ressource(PATH_RESSOURCE "invobj.hqr", 64000, 30);
-#else
 	InventoryObj = HQR_Init_Ressource(PATH_RESSOURCE "invobj.hqr", 20000, 30);
-#endif
 	if (!InventoryObj)
 		TheEnd(NOT_ENOUGH_MEM, "HQR Inventory");
 
@@ -1668,42 +1608,6 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 	if (AnimMem > 300000)
 		AnimMem = 300000;
 
-#ifdef PORT_NDS
-	/* PORT: `memory` above is Malloc(-1), and the community C rewrite of
-	 * MALLOC.C answers that query with 0 ("Query memory not supported").
-	 * So all three sizes come out 0 and every cache lands on its clamp
-	 * MINIMUM — which is far below the data it has to hold:
-	 *
-	 *     archive        entries   data     pool at the floor
-	 *     SPRITES.HQR      119     286 KB      50 KB   (50 slots)
-	 *     ANIM.HQR         517     431 KB     100 KB  (125 slots)
-	 *
-	 * Both are over-subscribed on bytes AND on slots, so the caches evict
-	 * constantly. That matters beyond the reloading cost: HQR_Del_Bloc
-	 * compacts the pool and slides every block above the victim DOWN, so a
-	 * pointer a caller is still holding silently starts pointing at other
-	 * data. DoFoundObj and the holomap keep `ptranim` across their entire
-	 * display loop, which is exactly where the "found" animation vanishes,
-	 * the 3D object stops rendering and the guru meditations came from.
-	 * (The Hyperscan port measured the same thing on the same archives and
-	 * left it as a build knob; see its PERSO.C.)
-	 *
-	 * Size them from the measured archives instead, so sprites and anims
-	 * are fully resident and never evict. Slots follow: AnimMem/800 = 575
-	 * >= 517, SpriteMem/1000 = 300 >= 119. Samples keep the floor — 3.4 MB
-	 * will never be resident on a 4 MB machine, and the SFX have their own
-	 * LRU pool in nds_audio.c anyway.
-	 * Override at build time to bisect: make EXTRA_CFLAGS=-DNDS_ANIM_MEM=100000
-	 */
-#ifndef NDS_ANIM_MEM
-#define NDS_ANIM_MEM 460000 /* 431 KB of data + headroom */
-#endif
-#ifndef NDS_SPRITE_MEM
-#define NDS_SPRITE_MEM 300000 /* 286 KB of data + headroom */
-#endif
-	AnimMem = NDS_ANIM_MEM;
-	SpriteMem = NDS_SPRITE_MEM;
-#endif
 
 	// buffer sprites
 

@@ -1,5 +1,7 @@
 # TRANSLATION_NOTES — LIB386/LIB_SVGA ASM → C (translate/)
 
+> Inherited from [ds-lba](https://github.com/vs-sr-dev/ds-lba), which ported the engine to the Nintendo DS. Entries about the DS build describe code that isn't in this repository.
+
 Session: translating the SVGA blitters (Watcom/MASM 386 flat) into portable C
 for the DS port. Pristine sources: `lba1-classic-community-main/LIB386/LIB_SVGA/*.ASM`.
 Signatures taken from `engine/LIB_SVGA/LIB_SVGA.H`, which is the authority on

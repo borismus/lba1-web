@@ -1,9 +1,11 @@
 # Porting notes — engine/ + platform/sdl
 
+> Inherited from [ds-lba](https://github.com/vs-sr-dev/ds-lba), which ported the engine to the Nintendo DS. Entries about the DS build describe code that isn't in this repository.
+
 Rules of the port:
 - `lba1-classic-community-main/` is PRISTINE: never modify it. Work on the copies in `engine/`.
 - Every change to a file in `engine/` must be logged below with the file, the reason, and one line.
-- Platform code lives in `platform/sdl` (and, later, `platform/nds`). No `#ifdef`s scattered through the engine if it can be avoided.
+- Platform code lives in `platform/sdl` (and `platform/web`). No `#ifdef`s scattered through the engine if it can be avoided.
 - Missing symbols → stubs centralised in `stubs.c` (audio/midi/cd) and `asm_stubs.c` (ASM modules not yet translated, future `translate/`).
 - Structs read from or written to files (e.g. T_HEADER in HQ_RESS.C): Watcom packed to 2, GCC pads — they need `#pragma pack` or field-by-field reads. Log every case found.
 

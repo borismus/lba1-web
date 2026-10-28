@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 /*-------------------------------------------------------------------------*/
-#if !defined(PORT_SDL) && !defined(PORT_NDS) /* PORT: duplicate symbol — game/GRILLE.C defines the same
+#ifndef PORT_SDL /* PORT: duplicate symbol — game/GRILLE.C defines the same
 					CreateMaskGph; Watcom librarian never pulled this one */
 ULONG CreateMaskGph(UBYTE *ptsrc, UBYTE *ptdst)
 {
@@ -36,6 +36,6 @@ ULONG CreateMaskGph(UBYTE *ptsrc, UBYTE *ptdst)
 	}
 	return (off);
 }
-#endif /* !PORT_SDL && !PORT_NDS */
+#endif /* !PORT_SDL */
 /*-------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
