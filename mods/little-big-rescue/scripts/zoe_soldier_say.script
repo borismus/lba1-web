@@ -1,0 +1,6 @@
+# The soldier by the sentry box in the yard (scene 1's object 3): his
+# "This sector is off limits" (offset 34) in a bubble, as
+# zoe_soldier_say_coat.script.
+
+== life
+  SAY_MESSAGE 0

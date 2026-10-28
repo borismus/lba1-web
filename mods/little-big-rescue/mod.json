@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "id": "little-big-rescue",
+  "name": "Little Big Rescue",
+  "version": "0.1.0",
+  "authors": ["Boris Smus"],
+  "description": "Zoe breaks Twinsen out of the Citadel prison, and Funfrock is waiting.",
+  "license": "CC BY-NC 4.0",
+  "credits": ["Voices: ElevenLabs"],
+  "requires": {
+    "releases": ["gog-classic"],
+    "features": ["hero-models", "body-pool", "end-fade"]
+  },
+  "ops": ["mod.ops"],
+  "start": { "scene": "@yard", "at": [16127, 256, 31743] }
+}

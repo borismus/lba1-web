@@ -96,6 +96,8 @@ void PORT_Diag(const char *fmt, ...);
 void PORT_DebugHook(void);
 int PORT_DebugAutoStart(void);
 int PORT_DebugLogo(void);
+int PORT_Feature(const char *name);
+int PORT_HeroFile3D(int scene);
 int PORT_JumpPending(void);
 void StopMusicCD(void);
 void PlayAllMusic(short num);

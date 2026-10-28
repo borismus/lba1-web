@@ -1,0 +1,79 @@
+# The guard in the doorway at the top of the stairs by the side door
+# (scene 0's object 20, made a robot Rabbibunny in zoe_prison.txt). He stands
+# with his back to the stairs, looking into the hall (angle 512), and says
+# nothing. Come close in Normal or Athletic mode and he hears Zoe (a scientist
+# he lets by) and turns on her. Her sneak punch from behind stuns him for
+# 2 seconds, back still turned: punch again before he recovers, or he turns
+# on her too. Turned on her, he fires bursts from his guns (gen anim 46,
+# as he does in the Hamalayi mutation centre) with a second's pause
+# between; if they bring her down, he stops (his shots would keep knocking
+# her about, and the game is only over once her death animation has
+# played out: PERSO.C) and it's game over. His life and armour
+# (zoe_prison.txt) make two of her punches knock him out; the engine does
+# that, and drops his key (to the cell block).
+
+== track
+guard:                      # offset 0
+  LABEL 0
+  ANIM 0
+  ANGLE 512
+  STOP
+fight:                      # offset 8
+  LABEL 1
+  ANIM 0
+  WAIT_NB_SECOND 1
+burst:
+  LABEL 2
+  ANIM 46
+  WAIT_ANIM
+  LABEL 3
+  ANIM 0
+  WAIT_NB_SECOND 1
+  GOTO @burst
+stun:                       # offset 36: punched from behind
+  LABEL 4
+  WAIT_NB_SECOND 2
+  LABEL 5
+  STOP
+won:                        # offset 47: Zoe is down, hold fire
+  LABEL 6
+  ANIM 0
+  STOP
+
+== life
+  SET_TRACK 0               # a track only runs once the life script sets it
+  SET_COMPORTEMENT @guard
+  END_COMPORTEMENT
+guard:
+  IF HIT_BY == 0 else @listen
+  SET_TRACK 36
+  SET_COMPORTEMENT @stunned
+  END_COMPORTEMENT
+listen:                     # Normal (0) and Athletic (1) are loud
+  IF DISTANCE(0) < 1500 else @guard_end
+  IF COMPORTEMENT_HERO < 2 else @guard_end
+  IF BODY_OBJ(0) == 4 else @start_fight
+guard_end:
+  END_COMPORTEMENT
+start_fight:
+  SET_DIR 2 0
+  SET_TRACK 8
+  SET_COMPORTEMENT @fight
+  END_COMPORTEMENT
+
+stunned:                    # a second punch now and the engine knocks him out
+  IF L_TRACK == 5 else @stunned_end
+  OFFSET @start_fight
+stunned_end:
+  END_COMPORTEMENT
+
+fight:
+  IF LIFE_POINT_OBJ(0) <= 0 else @fight_end
+  SET_TRACK 47
+  GAME_OVER
+  SET_COMPORTEMENT @done
+fight_end:
+  END_COMPORTEMENT
+done:
+  END_COMPORTEMENT
+  END

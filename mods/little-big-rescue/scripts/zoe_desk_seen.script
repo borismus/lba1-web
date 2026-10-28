@@ -1,0 +1,14 @@
+# The scientist at the console by the office (scene 0's object 1): walking
+# into the office (zone 0) makes him turn round and cry "A prisoner has
+# escaped!" (MESSAGE 5, offset 19, then END_COMPORTEMENT at 22). Hooked
+# there (zoe_prison.txt): Zoe in the scientist's coat (body 4) gets a word
+# about the patient instead.
+
+== life
+  IF BODY_OBJ(0) == 4 else @alarm
+  MESSAGE "Ah, the new lab assistant! The prisoner in the cells keeps raving about his dreams. Go and run some tests on him, would you?"
+  SET_DIR 0
+  ELSE 22
+alarm:
+  MESSAGE 5
+  ELSE 22

@@ -1,0 +1,138 @@
+# Twinsen in the yard (zoe_yard.txt): there only if Zoe got him out of his
+# cell (game flag 240, set in zoe_twinsen.script). He comes out of the
+# main gate with Zoe and follows her. When Funfrock picks a fight
+# (game flag 243, zoe_funfrock.script; Funfrock is object 16 in the yard)
+# Twinsen goes for him too, with more spirit than skill: he swings from
+# wherever he is (punches only land on contact, so most miss) and stumbles
+# after every few. His armour (zoe_yard.txt) is higher than any hit, so
+# Funfrock only knocks him about. He chases in a straight line, so
+# trees and fences would hold him up: while he's far behind (1500) he
+# walks through scenery (BRICK_COL 0), and solid again once close. Once
+# Funfrock is beaten (game flag 242) they have a word, the theme plays
+# (music 9, the main menu's) and they walk off: Zoe up the steps out of
+# the courtyard and across the yard (waypoints, objects 17-21, zoe_wp_*;
+# game flag 244: walking off) with Twinsen
+# behind her, and after seven seconds (track: outro) the game's
+# ending (THE_END: in the web build a fade to black, then the credits,
+# scene 119, then the menu; it also saves the game at the final scene, but
+# the web build's saves don't outlast the page). Track offsets: stand 0,
+# walk 5, swing 10, outro 43.
+
+== track
+stand:                      # offset 0
+  LABEL 0
+  ANIM 0
+  STOP
+walk:                       # offset 5
+  LABEL 1
+  ANIM 1
+  STOP
+swing:                      # offset 10: three punches, then he stumbles
+  LABEL 2
+  ANIM 17
+  WAIT_ANIM
+  ANIM 18
+  WAIT_ANIM
+  ANIM 0
+  WAIT_NB_SECOND 1
+  ANIM 19
+  WAIT_ANIM
+  ANIM 6
+  WAIT_ANIM
+  ANIM 0
+  WAIT_NB_SECOND 1
+  LABEL 3
+  STOP
+outro:                      # offset 43
+  LABEL 4
+  WAIT_NB_SECOND 7
+  LABEL 5
+  STOP
+
+== life
+start:
+  IF FLAG_GAME(240) == 1 else @not_rescued
+  SET_DIR 2 0
+  SET_COMPORTEMENT @follow
+  END_COMPORTEMENT
+not_rescued:
+  SUICIDE
+  END_COMPORTEMENT
+
+follow:
+  IF FLAG_GAME(243) == 1 else @peace
+  SET_COMPORTEMENT @fight
+  SAY_MESSAGE "Funfrock! Leave him to me, Zoe!"
+  END_COMPORTEMENT
+
+fight:
+  IF FLAG_GAME(242) == 0 else @won
+  SET_DIR 2 16
+  ONEIF HIT_BY == 16 else @swinging
+  SAY_MESSAGE "Ow! Okay... he's tougher than he looks."
+swinging:
+  IF L_TRACK == 2 else @aim                 # mid-swing
+  END_COMPORTEMENT
+aim:
+  IF DISTANCE(16) > 1400 else @swing
+  IF L_TRACK != 1 else @fight_end
+  SET_TRACK 5
+  IF DISTANCE(16) > 1500 else @fight_end
+  BRICK_COL 0
+  END_COMPORTEMENT
+swing:
+  BRICK_COL 1
+  SET_TRACK 10
+fight_end:
+  END_COMPORTEMENT
+
+won:
+  SET_TRACK 0
+  SET_DIR 2 0
+  MESSAGE "Ha! Did you see that, Zoe? I totally softened him up for you."
+  MESSAGE_OBJ 0 "Sure you did, hero."
+  MESSAGE "Thanks for getting me out, Zoe. Let's go home."
+  MESSAGE_OBJ 0 "Anytime. Next time, try not to get arrested for having dreams."
+  PLAY_MIDI 9
+  COMPORTEMENT_HERO 0
+  SET_FLAG_GAME 244 1
+  SET_DIR_OBJ 0 2 18                        # Zoe walks off (zoe_wp_*)
+  ANIM_OBJ 0 1
+  SET_TRACK 43
+  SET_COMPORTEMENT @outro
+  END_COMPORTEMENT
+
+outro:
+  IF L_TRACK == 5 else @peace
+  THE_END
+  END_COMPORTEMENT
+
+peace:                      # follow Zoe
+  IF DISTANCE(0) < 1200 else @talk_on       # Zoe talks to him: one of
+  IF ACTION == 1 else @talk_on               # three lines in turn (cube flag 20)
+  IF FLAG_CUBE(20) == 0 else @talk_1
+  MESSAGE "Nice coat. Very convincing."
+  SET_FLAG_CUBE 20 1
+  END_COMPORTEMENT
+talk_1:
+  IF FLAG_CUBE(20) == 1 else @talk_2
+  MESSAGE "Lead the way. I'm right behind you."
+  SET_FLAG_CUBE 20 2
+  END_COMPORTEMENT
+talk_2:
+  MESSAGE "Remind me never to get arrested again."
+  SET_FLAG_CUBE 20 0
+  END_COMPORTEMENT
+talk_on:
+  IF DISTANCE(0) > 900 else @close
+  ANIM 1
+  IF DISTANCE(0) > 1500 else @solid
+  BRICK_COL 0
+  OFFSET @done
+close:
+  ANIM 0
+solid:
+  BRICK_COL 1
+done:
+  END_COMPORTEMENT
+  END

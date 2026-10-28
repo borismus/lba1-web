@@ -1,0 +1,42 @@
+name: Outside the Citadel (Zoe)
+copy: 1          # the yard in front of the Citadel gate
+hero: @zoe
+skip: INC_CHAPTER   # arriving here ends chapter 0 (Twinsen's escape); Zoe's mission stays in it
+start: 16127 256 31743  # on the forest path, where the way from town comes in
+exit 3: zone 20     # the way to town: Zoe and Twinsen's way out (zoe_ending.script)
+exit 16: zone 21    # the Rabbibunny house: closed during the mission
+# Twinsen, once he's out of his cell (game flag 240), by the main gate:
+# the prison's front doors come out there, and they're the only way out
+# with him (zoe_prison.txt). His aggressive model (2: it has the punches),
+# and armour no hit gets through
+add actor 1: 2 body 3 at 19200 768 7000 armour 100 script zoe_ending
+# Zoe's reminders: what she's here for, and not leaving without him
+add actor 3: 0 body 3 at 14600 256 31743 script zoe_objective
+# Funfrock (model 69, as in the final battle), in the courtyard in front
+# of the main gate, facing the doors they come out of; object 16 to the
+# scripts (the yard's 13, then these)
+add actor 4: 69 body 0 at 21500 768 7679 facing 768 life 20 armour 1 script zoe_funfrock
+# Zoe's walk-off at the end (zoe_ending.script): waypoints, bodiless
+# (model -1) and fixed in the air (flags 0: no falling, no collisions):
+# a height probe (17), the courtyard's middle (18), the foot of the steps
+# (19), their top in the gap in the fence (20), the yard beyond (21)
+add actor 5: -1 body 255 at 21248 2318 9000 flags 0 script zoe_wp_probe
+add actor 6: -1 body 255 at 21248 768 7936 flags 0 script zoe_wp_middle
+add actor 7: -1 body 255 at 21248 768 10450 flags 0 script zoe_wp_steps
+add actor 8: -1 body 255 at 21248 1792 13050 flags 0 script zoe_wp_top
+add actor 9: -1 body 255 at 21248 1792 18000 flags 0 script zoe_marker
+# the soldier by the sentry box greets her in a bubble, not a pause
+patch 3 28: zoe_soldier_say_coat
+patch 3 34: zoe_soldier_say
+# no garbage truck (object 12, on its round by the chutes next to the gate)
+script 12: zoe_gone
+# the hero's own lines are Twinsen's recorded voice: reworded for Zoe
+# (new lines, so they're spoken in her voice)
+text 9: Hi there!
+text 16: Just doing my rounds.
+text 32: I'm looking for a young man. Ponytail, blue tunic, causes trouble.
+text 72: Hi! All this talk about the Legend is strange, don't you think?
+text 99: Hello, I'd like some information about LeBorgne the pirate.
+text 175: I'm here for the plans of the Teleportation Center. Special assignment!
+text 179: Hi, I'm looking for my boyfriend. Two groboclones dragged him off.
+text 20: Okay, I just have to wait for the truck to move into place.

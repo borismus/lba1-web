@@ -1,0 +1,39 @@
+# The guard in the hall by the front doors (scene 0's object 4). In the
+# original, hit, he runs to the alarm and wakes the alarm robot in this
+# hall; here he turns on Zoe and fights (anim 17, as the guards do close
+# up), when she punches him or the lab scientist calls him (SET_TRACK_OBJ
+# 4 5, zoe_lab_call.script). Two punches knock him out (life and
+# armour in zoe_prison.txt), and he drops the little key the front doors
+# take. Track offsets: stand 0, fight 5.
+
+== track
+stand:                      # offset 0
+  LABEL 0
+  ANIM 0
+  STOP
+fight:                      # offset 5
+  LABEL 1
+  ANIM 17
+  WAIT_ANIM
+  ANIM 0
+  WAIT_NB_SECOND 1
+  GOTO @fight
+
+== life
+  SET_TRACK 0
+  SET_COMPORTEMENT @calm
+  END_COMPORTEMENT
+
+calm:
+  OR_IF HIT_BY == 0 else @turn
+  IF L_TRACK == 1 else @calm_end
+turn:
+  SET_DIR 2 0
+  SET_TRACK 5
+  SET_COMPORTEMENT @fight
+calm_end:
+  END_COMPORTEMENT
+
+fight:
+  END_COMPORTEMENT
+  END

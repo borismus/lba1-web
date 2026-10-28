@@ -1566,7 +1566,13 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 	if (!InventoryObj)
 		TheEnd(NOT_ENOUGH_MEM, "HQR Inventory");
 
+#ifdef __EMSCRIPTEN__
+	/* PORT: room for more bodies in a scene than the original's 400 KB, for
+	 * a mod that asks (feature body-pool, docs/MODS.md) */
+	if (!HQM_Init_Memory(PORT_Feature("body-pool") ? 4000000 : 400000))
+#else
 	if (!HQM_Init_Memory(400000))
+#endif
 	{
 		TheEnd(NOT_ENOUGH_MEM, "HQMemory");
 	}

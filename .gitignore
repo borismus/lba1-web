@@ -27,6 +27,8 @@ LBA.CFG
 *.FLA
 *.mp3
 *.wav
+# a mod's own voice clips (mod check keeps original game data out of a mod)
+!mods/*/voices/*.wav
 *.bmp
 *.pcx
 *.zip

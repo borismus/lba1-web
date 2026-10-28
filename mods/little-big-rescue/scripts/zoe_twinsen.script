@@ -1,0 +1,79 @@
+# Twinsen in his cell (zoe_prison.txt). Zoe talks to him; he calls the
+# crane lift (scene 0's object 7), rides it up out of the cell and follows
+# her. Game flag 240 = rescued (unused by the original scripts).
+#
+# The lift's track (script.py ../gamedata/... 0 7) shuttles between the
+# walkway by the office (point 13, labels 3 and 100) and the floor of this
+# cell (point 15, label 102, where it waits 5 seconds); label 2 is parked.
+
+== track
+stop:                       # offset 0
+  STOP
+walk:                       # offset 1: onto the lift, in the middle of the cell
+  ANIM 1
+  GOTO_POINT 15
+  ANIM 0
+  STOP
+
+== life
+  IF FLAG_GAME(240) == 0 else @out          # freed already: zoe_twinsen_out
+  SET_COMPORTEMENT @idle
+  END_COMPORTEMENT
+out:
+  SUICIDE
+  END_COMPORTEMENT
+
+idle:
+  IF DISTANCE(0) < 1200 else @idle_end
+  IF ACTION == 1 else @idle_end
+  MESSAGE "Zoe?! Took you long enough!"
+  SET_FLAG_GAME 240 1
+  IF L_TRACK_OBJ(7) == 2 else @called       # parked: start its shuttle
+  SET_TRACK_OBJ 7 0
+called:
+  SET_COMPORTEMENT_OBJ 7 26                 # past its 'hero changed behaviour' start
+  SET_COMPORTEMENT @wait_lift
+idle_end:
+  END_COMPORTEMENT
+
+wait_lift:                  # the lift is down here: step on
+  IF L_TRACK_OBJ(7) == 102 else @wait_end
+  SET_TRACK 1
+  SET_COMPORTEMENT @riding
+wait_end:
+  END_COMPORTEMENT
+
+riding:                     # up at the walkway: follow Zoe
+  IF L_TRACK_OBJ(7) == 100 else @ride_end
+  SET_TRACK 0
+  SET_DIR 2 0
+  MESSAGE "Let's get out of here!"
+  SET_COMPORTEMENT @free
+ride_end:
+  END_COMPORTEMENT
+
+free:                       # following Zoe
+  IF DISTANCE(0) < 1200 else @talk_on       # Zoe talks to him: one of
+  IF ACTION == 1 else @talk_on               # three lines in turn (cube flag 20)
+  IF FLAG_CUBE(20) == 0 else @talk_1
+  MESSAGE "Nice coat. Very convincing."
+  SET_FLAG_CUBE 20 1
+  END_COMPORTEMENT
+talk_1:
+  IF FLAG_CUBE(20) == 1 else @talk_2
+  MESSAGE "Lead the way. I'm right behind you."
+  SET_FLAG_CUBE 20 2
+  END_COMPORTEMENT
+talk_2:
+  MESSAGE "Remind me never to get arrested again."
+  SET_FLAG_CUBE 20 0
+  END_COMPORTEMENT
+talk_on:                    # follow mode only turns him toward Zoe: walk
+  IF DISTANCE(0) > 900 else @close          # while she's away (as the
+  ANIM 1                                    # original guards do)
+  OFFSET @free_end
+close:
+  ANIM 0
+free_end:
+  END_COMPORTEMENT
+  END

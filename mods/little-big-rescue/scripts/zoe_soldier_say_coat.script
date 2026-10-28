@@ -1,0 +1,8 @@
+# The soldier by the sentry box in the yard (scene 1's object 3) greets
+# the hero with MESSAGE, which stops the game until it's read; in Zoe's
+# yard he says it in a bubble instead (SAY_MESSAGE, same size), so he
+# doesn't halt the walk-off at the end (zoe_ending.script). This one: to
+# a scientist (offset 28).
+
+== life
+  SAY_MESSAGE 21

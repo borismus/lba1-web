@@ -1,0 +1,16 @@
+# The scientist pacing the lab (scene 0's object 5): once he's turned to the
+# hero, IF LIFE_POINT_OBJ(4) > 0 (offset 41) leads to "A prisoner has
+# escaped!" (48) and the guard by him running to the alarm; 55 ends the
+# comportement. Hooked there: Zoe in the coat gets a word instead, or none
+# once Twinsen is out (game flag 240), and he goes back to his round.
+
+== life
+  IF BODY_OBJ(0) == 4 else @alarm
+  IF FLAG_GAME(240) == 0 else @quiet       # Twinsen's out: nothing to say
+  MESSAGE "Ah, a new colleague. Off to see the prisoners? Don't let the dreamer talk your ear off."
+quiet:
+  SET_TRACK 0
+  ELSE 55
+alarm:
+  IF LIFE_POINT_OBJ(4) > 0 else 55
+  ELSE 48

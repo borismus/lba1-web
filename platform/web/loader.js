@@ -14,6 +14,10 @@ const LBA = (() => {
   const HQRS = ['anim', 'body', 'file3d', 'invobj', 'lba_bll', 'lba_brk', 'lba_gri',
     'midi_mi', 'midi_sb', 'ress', 'samples', 'scene', 'sprites', 'text'];
   const REQUIRED = HQRS.map(n => n + '.hqr').concat(['setup.lst']);
+  // a mod build's own files, next to the game's (docs/MODS.md): the engine
+  // features it asks for, and its heroes' models per scene. Until the page
+  // builds mods itself, a folder built by levelkit can be dropped in whole.
+  const OPTIONAL = ['features', 'hero.dat'];
   const VOX_LANG = { english: 'en', 'français': 'fr', francais: 'fr', deutsch: 'de' };
 
   // Copies of the game we've tested: the classic DOS files' SHA-256s (a few
@@ -42,7 +46,7 @@ const LBA = (() => {
   // which entries we might need: the game's files, its voices, the music
   const wanted = p => {
     const b = base(p);
-    return REQUIRED.includes(b) || b === 'lba.cfg' || /\.vox$/.test(b) || /^lba1-\d\d\.mp3$/.test(b);
+    return REQUIRED.includes(b) || OPTIONAL.includes(b) || b === 'lba.cfg' || /\.vox$/.test(b) || /^lba1-\d\d\.mp3$/.test(b);
   };
 
   // ── sources ─────────────────────────────────────────────────────────────
@@ -201,6 +205,7 @@ const LBA = (() => {
       progress(`Copying the game files… ${Math.round(100 * i++ / names.length)}%`);
       put(n, await game.data[n].read());
     }
+    for (const n of OPTIONAL) if (game.data[n]) put(n, await game.data[n].read());
     const cfg = game.data['lba.cfg'] ? latin1(await game.data['lba.cfg'].read()) : null;
     const text = config(cfg);
     put('lba.cfg', fromLatin1(text));

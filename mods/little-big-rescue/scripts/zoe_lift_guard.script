@@ -1,0 +1,16 @@
+# The guard who rides the crane lift (scene 0's object 8): his comportement
+# at 642 is where the hero's script sends him when she talks to him (the
+# original: he faces her and, in chapters 0-1, says "we're going to
+# dissect... uh, I mean... take care of you!"). For Zoe he says nothing: he
+# goes for her (his comportement 662, as when the office guard calls him),
+# unless she's in the scientist's coat; then he carries on (561: back to the
+# comportement his cube flags say). Written over the original's 20 bytes
+# at 642 (zoe_prison.txt: patch 8 642).
+
+== life
+talk:                       # offset 642
+  IF BODY_OBJ(0) != 4 else @carry_on
+  SET_COMPORTEMENT 662
+  END_COMPORTEMENT
+carry_on:
+  ELSE 561

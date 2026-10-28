@@ -1,0 +1,106 @@
+# Funfrock, waiting in front of the Citadel's main gate (zoe_yard.txt) once
+# Zoe has got Twinsen out (game flag 240): they come out of it. Two seconds
+# after the yard is on screen (track: arrive) he gloats and
+# the fight is on (game flag 243; zoe_ending.script has Twinsen join in):
+# close up he slashes (anim 184, two hits of force 5; his four-hit 183
+# took most of Zoe's life at once) and catches his breath for two seconds
+# (her chance to punch), at a distance he
+# throws magic balls (anim 46), in between he comes for her. Life 20 and
+# armour 1 (zoe_yard.txt): Zoe's punches and Twinsen's (force 2) wear him
+# down, and under 7 he gives up before the engine would kill him, and
+# vanishes (game flag 242: beaten). Track offsets: stand 0, walk 5,
+# slash 10, shoot 28, gloat 46, arrive 56.
+
+== track
+stand:                      # offset 0
+  LABEL 0
+  ANIM 0
+  STOP
+walk:                       # offset 5
+  LABEL 1
+  ANIM 1
+  STOP
+slash:                      # offset 10
+  LABEL 2
+  ANIM 184
+  WAIT_ANIM
+  LABEL 3
+  ANIM 0
+  WAIT_NB_SECOND 2
+  LABEL 4
+  STOP
+shoot:                      # offset 28
+  LABEL 5
+  ANIM 46
+  WAIT_ANIM
+  LABEL 6
+  ANIM 0
+  WAIT_NB_SECOND 2
+  LABEL 7
+  STOP
+gloat:                      # offset 46
+  LABEL 8
+  ANIM 186
+  WAIT_ANIM
+  LABEL 9
+  ANIM 0
+  STOP
+arrive:                     # offset 56
+  LABEL 10
+  ANIM 0
+  WAIT_NB_SECOND 2
+  LABEL 11
+  STOP
+
+== life
+start:
+  IF FLAG_GAME(240) == 1 else @gone         # Twinsen's still in his cell
+  IF FLAG_GAME(242) == 0 else @gone         # beaten already
+  SET_TRACK 56
+  SET_COMPORTEMENT @waiting
+  END_COMPORTEMENT
+gone:
+  SUICIDE
+  END_COMPORTEMENT
+
+waiting:
+  IF L_TRACK == 11 else @waiting_end
+  IF DISTANCE(0) < 3500 else @waiting_end
+  SET_DIR 2 0
+  SET_TRACK 46
+  MESSAGE "Well, well. Zoe, in one of my lab coats, come to fetch her dreamer. How touching. @ Nobody leaves my Citadel, Twinsen. Not you, and certainly not her!"
+  SET_FLAG_GAME 243 1
+  SET_COMPORTEMENT @fight
+waiting_end:
+  END_COMPORTEMENT
+
+fight:
+  IF LIFE_POINT < 7 else @fighting
+  SET_FLAG_GAME 242 1
+  SET_FLAG_GAME 243 0
+  SET_TRACK 0
+  MESSAGE "Impossible! Beaten by a lab coat... and a dreamer! @ This isn't over! My clones will find you, wherever you hide!"
+  SET_COMPORTEMENT @gone
+  END_COMPORTEMENT
+fighting:                   # mid-move (labels 2, 3, 5, 6, 8): let it finish
+  OR_IF L_TRACK == 2 else @busy
+  OR_IF L_TRACK == 3 else @busy
+  OR_IF L_TRACK == 5 else @busy
+  OR_IF L_TRACK == 6 else @busy
+  IF L_TRACK == 8 else @decide
+busy:
+  END_COMPORTEMENT
+decide:
+  IF DISTANCE(0) < 900 else @far
+  SET_TRACK 10
+  END_COMPORTEMENT
+far:
+  IF DISTANCE(0) > 3000 else @chase
+  SET_TRACK 28
+  END_COMPORTEMENT
+chase:
+  IF L_TRACK != 1 else @fight_end
+  SET_TRACK 5
+fight_end:
+  END_COMPORTEMENT
+  END

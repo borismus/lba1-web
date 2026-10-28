@@ -1,0 +1,11 @@
+# The desk scientist when the hero talks to him (scene 0's object 1, the
+# comportement at 23): in chapter 0 he says text 18 (MESSAGE 18, offset 61),
+# then carries on at 70. Hooked there: to Zoe in the coat, something else.
+
+== life
+  IF BODY_OBJ(0) == 4 else @threat
+  MESSAGE "Busy, busy! The dreamer in the cells is all yours."
+  ELSE 70
+threat:
+  MESSAGE 18
+  ELSE 70

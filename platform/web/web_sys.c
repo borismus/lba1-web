@@ -272,3 +272,68 @@ void PORT_Diag(const char *fmt, ...)
 	vprintf(fmt, ap);
 	va_end(ap);
 }
+
+/* Engine features a mod set asks for (docs/MODS.md): its build writes their
+ * names, one per line, to "features" next to the game files. No file (the
+ * plain game): every feature off, the engine as the original. */
+int PORT_Feature(const char *name)
+{
+	static char list[1024];
+	static int read = 0;
+	const char *p;
+	size_t n = strlen(name);
+
+	if (!read)
+	{
+		FILE *f = fopen("features", "rb");
+
+		read = 1;
+		if (f)
+		{
+			size_t got = fread(list, 1, sizeof(list) - 1, f);
+
+			list[got] = 0;
+			fclose(f);
+		}
+	}
+	for (p = list; *p;)
+	{
+		const char *e = p;
+
+		while (*e && *e != '\n' && *e != '\r')
+			e++;
+		if ((size_t)(e - p) == n && !strncmp(p, name, n))
+			return 1;
+		p = *e ? e + 1 : e;
+	}
+	return 0;
+}
+
+/* Feature hero-models: hero.dat holds one little-endian WORD per scene, the
+ * FILE3D.HQR index of that scene's hero 'normal' model (0: Twinsen; the
+ * other behaviours follow it). Read once; no file means Twinsen everywhere. */
+int PORT_HeroFile3D(int scene)
+{
+	static unsigned char *table;
+	static long count = -1;
+
+	if (count < 0)
+	{
+		FILE *f = PORT_Feature("hero-models") ? fopen("hero.dat", "rb") : NULL;
+
+		count = 0;
+		if (f)
+		{
+			fseek(f, 0, SEEK_END);
+			count = ftell(f) / 2;
+			fseek(f, 0, SEEK_SET);
+			table = malloc(count * 2);
+			if (!table || fread(table, 2, count, f) != (size_t)count)
+				count = 0;
+			fclose(f);
+		}
+	}
+	if (scene < 0 || scene >= count)
+		return 0;
+	return table[scene * 2] | (table[scene * 2 + 1] << 8);
+}

@@ -55,8 +55,8 @@ little-big-rescue/
   mod.json              the manifest
   mod.ops               the operations, applied in order (more .ops files may be listed)
   levels/*.txt          level files (the high-level form of operations)
-  scripts/*.script      life and track scripts
-  voices/*.wav          spoken lines
+  scripts/*.script      life and track scripts (a level's `script NAME` is scripts/NAME.script)
+  voices/*.wav          spoken lines; voices/index.json: which line each one is
   art/*.png             images (future: see Open questions)
 ```
 
@@ -174,9 +174,18 @@ scene @s exits <ref> become zone @z               # exits to <ref> become a scen
 scene @s object <n> set [model <m>] [body <b>] [life <l>] [armour <a>] [drops <count> <kind>]
 scene @s object <n> script <file.script>          # new life and/or track script
 scene @s object <n> patch life at <offset> with <file.script>   # same-size patch, so other scripts' offsets into it hold
+scene @s object <n> hook life at <offset> with <file.script>    # the instruction at <offset> jumps to new code, appended
 scene @s add @name model <m> [body <b>] at <x> <y> <z> [facing <beta>] \
          [life <l>] [armour <a>] [flags <hex>] [script <file.script>] [says "…"]
 ```
+
+A **hook** changes what an original script does without copying it: the
+instruction at `<offset>` (at least 3 bytes) becomes a jump to the hook's
+code, appended to the end of the script, so every other offset in it stays
+valid. The hook's code must redo what the replaced instruction did, and
+jumps back with `ELSE <offset>`. Prefer a hook (or a same-size patch) to
+replacing an original script whole: a replacement written by transcribing
+the original is the original's code, and doesn't belong in a mod.
 
 `<n>` is an object's number in the base scene (0: the hero). `model -1`
 adds an object with no body: nothing to see or bump into, for script
@@ -191,7 +200,13 @@ voice @text from voices/<file>.wav                 # the spoken line of a text; 
 ```
 
 A line written in quotes in a script (`MESSAGE "…"`) is a `text add` in the
-scene's island bank; its voice, if any, is given with `voice`.
+scene's island bank. Its voice, if any, is given with `voice`, or found by
+its text in `voices/index.json`, which maps each spoken line, exactly as
+written, to its clip:
+
+```json
+{ "Hi there!": "hi-there-95e2b0.wav" }
+```
 
 Models:
 

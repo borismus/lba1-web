@@ -174,30 +174,35 @@ void StartInitAllObjs()
 void LoadFicPerso()
 {
 	T_OBJET *ptrobj;
+	WORD base = 0;
 
 	ptrobj = &ListObjet[NUM_PERSO];
 
-	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", FILE_3D_SPORTIF, (void **)&PtrFile3dSportif);
+#ifdef __EMSCRIPTEN__
+	base = PORT_HeroFile3D(NewCube); /* PORT: a mod's hero (feature hero-models, docs/MODS.md) */
+#endif
+
+	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", base + FILE_3D_SPORTIF, (void **)&PtrFile3dSportif);
 	CHECK_MEMORY
 	ptrobj->PtrFile3D = PtrFile3dSportif;
 	AnimRienSportif = SearchAnim(GEN_ANIM_RIEN, NUM_PERSO);
 
-	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", FILE_3D_AGRESSIF, (void **)&PtrFile3dAgressif);
+	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", base + FILE_3D_AGRESSIF, (void **)&PtrFile3dAgressif);
 	CHECK_MEMORY
 	ptrobj->PtrFile3D = PtrFile3dAgressif;
 	AnimRienAgressif = SearchAnim(GEN_ANIM_RIEN, NUM_PERSO);
 
-	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", FILE_3D_DISCRET, (void **)&PtrFile3dDiscret);
+	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", base + FILE_3D_DISCRET, (void **)&PtrFile3dDiscret);
 	CHECK_MEMORY
 	ptrobj->PtrFile3D = PtrFile3dDiscret;
 	AnimRienDiscret = SearchAnim(GEN_ANIM_RIEN, NUM_PERSO);
 
-	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", FILE_3D_PROTOPACK, (void **)&PtrFile3dProtopack);
+	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", base + FILE_3D_PROTOPACK, (void **)&PtrFile3dProtopack);
 	CHECK_MEMORY
 	ptrobj->PtrFile3D = PtrFile3dProtopack;
 	AnimRienProtopack = SearchAnim(GEN_ANIM_RIEN, NUM_PERSO);
 
-	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", FILE_3D_NORMAL, (void **)&PtrFile3dNormal);
+	HQRM_Load(PATH_RESSOURCE "FILE3D.HQR", base + FILE_3D_NORMAL, (void **)&PtrFile3dNormal);
 	CHECK_MEMORY
 	ptrobj->PtrFile3D = PtrFile3dNormal;
 	AnimRienNormal = SearchAnim(GEN_ANIM_RIEN, NUM_PERSO);

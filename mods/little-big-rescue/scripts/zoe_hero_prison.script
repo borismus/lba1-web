@@ -1,0 +1,7 @@
+# The hero's script in the prison (scene 0's): its main comportement (92:
+# talking to people, the coat, ...) only starts once the hero switches
+# to Athletic or Aggressive (in the original, Twinsen breaking out of his
+# cell). Zoe isn't in a cell: straight to it (zoe_prison.txt: patch 0 76).
+
+== life
+  ELSE 88                   # offset 76: to SET_COMPORTEMENT 92

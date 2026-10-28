@@ -1,0 +1,17 @@
+# Where Zoe is when the walk-off starts (zoe_ending.script, game flag 244):
+# this bodiless object (object 17) floats 1550 above the courtyard floor,
+# and DISTANCE ignores objects 1500 or more above or below, so it only sees
+# her if she's up on the steps or the yard. Then she heads straight for the
+# top of the steps (object 20) instead of back down through the courtyard.
+
+== life
+  IF FLAG_GAME(244) == 1 else @wait
+  IF DISTANCE(0) < 30000 else @done_now
+  SET_DIR_OBJ 0 2 20
+done_now:
+  SET_COMPORTEMENT @done
+wait:
+  END_COMPORTEMENT
+done:
+  END_COMPORTEMENT
+  END

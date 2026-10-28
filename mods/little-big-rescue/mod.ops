@@ -1,0 +1,11 @@
+# Little Big Rescue: Zoe breaks Twinsen out of the Citadel (docs/MODS.md).
+
+# Zoe as the hero: the hero's five behaviour models with her body (BODY 48),
+# the hero's animations remapped to her skeleton (her legs have no foot
+# bone; her head is bone 12, with a ponytail and side locks)
+body copy 48 as @coat recolor 224:250 dim 250:3     # the scientist's coat: her pink dress in white
+hero @zoe from file3d 22 body 48 bones 0,1,2,3,4,5,6,7,8,9,11,12,14,15,16,-,-,-,17 \
+     outfit 4 body @coat voice 30:32 22:1.6 0:1.5 99:1.5 101:1.5
+
+level @prison from levels/zoe_prison.txt      # copy: 0, the Citadel prison
+level @yard   from levels/zoe_yard.txt        # copy: 1, the yard in front of it

@@ -1329,6 +1329,12 @@ void DoLife(WORD numobj)
 			break;
 
 		case LM_THE_END:
+#ifdef __EMSCRIPTEN__
+			/* PORT: a mod's ending fades out first (feature end-fade,
+			   docs/MODS.md); the credits fade back in */
+			if (PORT_Feature("end-fade"))
+				FadeToBlack(PtrPal);
+#endif
 #ifndef DEMO
 			// Save Partie retour scene de fin (inrejouable ?)
 			NbFourLeafClover = 0;

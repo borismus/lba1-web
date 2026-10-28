@@ -1,0 +1,7 @@
+# The lab scientist calls the guard by him (object 4) with SET_TRACK_OBJ 4 3,
+# an offset into the guard's original track. The guard has his own script
+# now (zoe_lab_guard.script): his fight is at track offset 5. Written over
+# both calls (offsets 31 and 51; zoe_prison.txt).
+
+== life
+  SET_TRACK_OBJ 4 5

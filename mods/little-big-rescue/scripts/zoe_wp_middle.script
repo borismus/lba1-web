@@ -1,0 +1,17 @@
+# The middle of the courtyard in front of the main gate (object 18).
+# A waypoint of Zoe's walk-off at the end (zoe_ending.script, game flag
+# 244): bodiless (model -1, nothing to bump into) and not falling (flags 0;
+# zoe_yard.txt). Once she's within 600, she heads for the next one (object
+# 19). The steps are the courtyard's only way out, so she goes by its
+# middle (in sight of every corner), the foot of the steps, their top.
+
+== life
+  IF FLAG_GAME(244) == 1 else @wait
+  IF DISTANCE(0) < 600 else @wait
+  SET_DIR_OBJ 0 2 19
+  SET_COMPORTEMENT @done
+wait:
+  END_COMPORTEMENT
+done:
+  END_COMPORTEMENT
+  END

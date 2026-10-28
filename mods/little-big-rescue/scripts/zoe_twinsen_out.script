@@ -1,0 +1,43 @@
+# Twinsen already out of his cell when the prison loads (game flag 240):
+# by Zoe in the hall by the front doors (zoe_prison.txt; the one in the
+# cell, zoe_twinsen.script, goes away), following her. While far behind
+# he walks through scenery (BRICK_COL 0), as in zoe_ending.script.
+
+== life
+  IF FLAG_GAME(240) == 1 else @gone
+  SET_DIR 2 0
+  SET_COMPORTEMENT @follow
+  END_COMPORTEMENT
+gone:
+  SUICIDE
+  END_COMPORTEMENT
+
+follow:
+  IF DISTANCE(0) < 1200 else @talk_on       # Zoe talks to him: one of
+  IF ACTION == 1 else @talk_on               # three lines in turn (cube flag 20)
+  IF FLAG_CUBE(20) == 0 else @talk_1
+  MESSAGE "Nice coat. Very convincing."
+  SET_FLAG_CUBE 20 1
+  END_COMPORTEMENT
+talk_1:
+  IF FLAG_CUBE(20) == 1 else @talk_2
+  MESSAGE "Lead the way. I'm right behind you."
+  SET_FLAG_CUBE 20 2
+  END_COMPORTEMENT
+talk_2:
+  MESSAGE "Remind me never to get arrested again."
+  SET_FLAG_CUBE 20 0
+  END_COMPORTEMENT
+talk_on:
+  IF DISTANCE(0) > 900 else @close
+  ANIM 1
+  IF DISTANCE(0) > 1500 else @solid
+  BRICK_COL 0
+  OFFSET @done
+close:
+  ANIM 0
+solid:
+  BRICK_COL 1
+done:
+  END_COMPORTEMENT
+  END

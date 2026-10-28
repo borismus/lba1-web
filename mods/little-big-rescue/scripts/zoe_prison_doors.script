@@ -1,0 +1,20 @@
+# An invisible watcher inside the prison's front doors (zoe_prison.txt).
+# The doors (which take a little key) are no way out before Twinsen is
+# out of his cell (game flag 240): this watcher stands in front of them, and
+# walking up to them Zoe says why she won't go.
+
+== life
+  INVISIBLE 1
+  SET_COMPORTEMENT @watch
+  END_COMPORTEMENT
+
+watch:
+  IF FLAG_GAME(240) == 0 else @gone
+  ONEIF DISTANCE(0) < 1000 else @watch_end
+  MESSAGE_OBJ 0 "I'm not leaving without Twinsen!"
+watch_end:
+  END_COMPORTEMENT
+gone:                       # rescued: out of the way
+  SUICIDE
+  END_COMPORTEMENT
+  END

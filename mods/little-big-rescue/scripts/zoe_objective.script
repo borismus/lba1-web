@@ -1,0 +1,38 @@
+# Zoe's own reminders in the yard (an invisible actor, zoe_yard.txt). The
+# first time she's here she says what she came for (game flag 241: said);
+# heading for the way to town (zone 20) before Twinsen is out (game flag
+# 240, zoe_twinsen.script), she won't go. The first line waits two seconds
+# (the track), so the yard is on screen.
+
+== track
+  WAIT_NB_SECOND 2
+  LABEL 1
+  STOP
+
+== life
+  INVISIBLE 1
+  SET_TRACK 0
+  SET_COMPORTEMENT @intro
+  END_COMPORTEMENT
+
+intro:
+  IF L_TRACK == 1 else @wait
+  IF FLAG_GAME(241) == 0 else @watch_start
+  IF FLAG_GAME(240) == 0 else @watch_start  # he's out already
+  SET_FLAG_GAME 241 1
+  MESSAGE_OBJ 0 "Twinsen's locked up in the Citadel prison. Time to break him out!"
+watch_start:
+  SET_COMPORTEMENT @watch
+wait:
+  END_COMPORTEMENT
+
+watch:
+  IF FLAG_GAME(240) == 0 else @rescued
+  ONEIF ZONE_OBJ(0) == 20 else @watch_end
+  MESSAGE_OBJ 0 "I'm not leaving without Twinsen!"
+watch_end:
+  END_COMPORTEMENT
+rescued:
+  SUICIDE
+  END_COMPORTEMENT
+  END

@@ -1,0 +1,55 @@
+name: Citadel prison (Zoe)
+copy: 0          # the original prison: guards, cells, the scientist's coat
+hero: @zoe
+# start (only when launched at this scene; from the yard she comes in by
+# the side door, 5375 256 23551, in zone 9, where the original's hero
+# script takes over until the door has shut): a step past that door, below
+# the guard's stairs, for testing
+start: 5375 256 24300
+caught: game over       # no cell for Zoe: the arrest ends the game
+# what the guards say to Zoe in the scientist's coat
+text 4: Hellooooo nurse... I mean, colleague!
+# the guard at the top of the stairs: the original's groboclone there
+# (armour 10: Zoe's punches, force 2, barely touch it) becomes a robot
+# Rabbibunny (model 54, as in the Hamalayi mutation centre, scene 67) that
+# two punches knock out. He drops the key to the gate into the cell block (object 13, which
+# opens for a hero with a little key)
+object 20: model 54 body 0 life 4 armour 1 drops 1 key
+script 20: zoe_guard
+# Twinsen, in prison clothes (body slot 3), against the glass of the cell
+# the original game starts him in, close enough to talk to from the walkway
+add actor 1: 0 body 3 at 26880 768 26750 script zoe_twinsen
+# the scientists raise the alarm when they see the hero, and the guard by
+# the office runs to it when he walks in there; not for a scientist
+hook 1 19: zoe_desk_seen
+hook 1 61: zoe_desk_talk
+hook 5 41: zoe_lab_seen
+patch 5 31: zoe_lab_call
+patch 5 51: zoe_lab_call
+hook 2 19: zoe_office_alarm
+# the hero's own lines are Twinsen's recorded voice: reworded for Zoe
+# (new lines, so they're spoken in her voice)
+text 9: Hi there!
+text 16: Just doing my rounds.
+text 32: I'm looking for a young man. Ponytail, blue tunic, causes trouble.
+text 72: Hi! All this talk about the Legend is strange, don't you think?
+text 99: Hello, I'd like some information about LeBorgne the pirate.
+text 175: I'm here for the plans of the Teleportation Center. Special assignment!
+text 179: Hi, I'm looking for my boyfriend. Two groboclones dragged him off.
+text 8: Hmm... maybe I can get that guard's attention.
+text 66: There! I've got all my things back.
+# the lift guard doesn't talk back, he goes for her
+patch 8 642: zoe_lift_guard
+# Zoe can talk to people from the start, not only after a behaviour change
+patch 0 76: zoe_hero_prison
+# Zoe leaves with Twinsen or not at all, and they go out by the front doors
+# (objects 15 and 16, to the yard's main gate): they take a little key,
+# which the guard in the hall by them drops (object 4, knocked out by two
+# punches); the side door (exit zone 17) is shut
+object 4: life 4 armour 1 drops 1 key
+script 4: zoe_lab_guard
+exit zone 17: closed
+add actor 2: 0 body 3 at 18000 3584 6143 script zoe_prison_doors
+# Twinsen, if he's already out when the prison loads (game flag 240; the
+# start for testing the ending: lba1.html?scene=140&at=14600,3584,7000&flags=240,241&body=4)
+add actor 3: 0 body 3 at 14000 3584 7800 script zoe_twinsen_out

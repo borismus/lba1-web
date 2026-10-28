@@ -1,0 +1,10 @@
+# The guard by the office (scene 0's object 2) runs to the alarm when the
+# cell-block gate (object 13) opens or the hero walks into the office (zone
+# 0): OR_IF L_TRACK_OBJ(13) == 100 (offset 19, true: to 33), IF ZONE_OBJ(0)
+# == 0 (26, false: to 53, the end of the comportement). Hooked at 19: not
+# for Zoe in the scientist's coat (body 4).
+
+== life
+  IF BODY_OBJ(0) != 4 else 53
+  OR_IF L_TRACK_OBJ(13) == 100 else 33
+  ELSE 26
