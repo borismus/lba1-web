@@ -1,0 +1,107 @@
+name: Rabbibunny house
+library: 16      # the Rabbibunny house tile set (scene 16)
+template: 16     # its lighting, ambience and island (Citadel Island)
+house: yes       # automatic walls: trim, brick foundation, cut-away fronts, arches
+music: 27        # the house theme (also the sewers')
+ground: 4        # ground floor at y=4 (room for the brick foundation below)
+# Two floors. Downstairs: a big living room, the hall (front door at the
+# bottom leads out onto Citadel Island), kitchen and bathroom. Upstairs
+# (the back half, 4 cells up, stairs from the hall): the study, where a
+# Grobo goes through his checklist at the drafting table, a landing and
+# a bedroom. Talk to anyone with the action key, and search the furniture
+# (action key in front of it). Watch out for the trap door in the hall.
+legend:
+  #  wall                  # house wall (full height at the back, low elsewhere)
+  P  wall 6                # back wall with a painting
+  .  floor 1               # wooden floor
+  ,  floor 1 up 4          # wooden floor, upstairs
+  t  floor 7               # kitchen tiles
+  b  floor 2               # bathroom tiles
+  r  floor 85              # rug
+  R  floor 85 up 4         # rug, upstairs
+  q  floor 85              # bath mat
+  +  door on .             # 3 wide: arched doorway; wider: open passage
+  ;  door on ,             # the same, upstairs
+  >  stairs                # steps down toward +x, one cell each
+  D  frontdoor             # the stone front door (3 wide)
+  E  floor 1 exit 1 at 11264 256 28672   # out the front door, onto Citadel Island
+  w  object 76 on ,        # drafting table
+  l  object 46 on ,        # standing lamp
+  h  object 69 on ,        # chest
+  p  object 47 on ,        # pot plant
+  k  object 86 on ,        # coat stand
+  B  object 23 on ,        # bed
+  n  object 24 on ,        # bedside table
+  a  object 34 on ,        # armchair
+  F  object 106 on .       # round hearth
+  5  object 34 on .        # armchair
+  A  object 35 on .        # armchair
+  s  object 36 on .        # sofa
+  T  object 98 on .        # TV
+  O  object 41 on r        # round table
+  c  object 37 on r        # chair
+  d  object 38 on r        # chair
+  L  object 46 on .        # standing lamp
+  7  object 47 on .        # pot plant
+  6  object 86 on .        # coat stand
+  v  object 79 on .        # barrel
+  o  object 75 on t        # stove
+  i  object 77 on t        # sink
+  9  object 41 on t        # table
+  m  object 88 on t        # stool
+  8  object 79 on t        # barrel
+  j  object 96 on t        # wine jug
+  u  object 83 on b        # bath
+  e  object 84 on b        # wash basin
+  f  object 47 on b        # pot plant
+  G  actor 11 on , says Let's see. Bricks: check. Arches: check. Stairs: one flight, and they only go one way. @ Front door: opens onto Citadel Island. Check! @ This house passes inspection, Twinsen.
+  g  actor 13 on , says I'm drawing up plans for a third floor. The trouble is, the tile set only has one kind of step.
+  Y  actor 21 wander on , says Mind the railing! A Grobo went over it last week. He was fine. Grobos bounce.
+  Z  actor 26 on , says Shh! Some of us are trying to nap. @ ...I'm a sailor. Sailors nap whenever they can.
+  Q  actor 81 wander on . says Welcome, Twinsen! Make yourself at home. Everyone else has. @ Have a look around. People leave all sorts of things in the furniture.
+  V  actor 62 wander on r says Rabbibunnies and Grobos under one roof. Who'd have thought it? @ I'm the only one with a hat, though.
+  X  actor 16 wander on . says The TV only gets one channel, and it's mostly FunFrock. @ I keep losing coins down the front of it.
+  U  actor 77 wander on . says I came for the party and stayed for the snacks.
+  H  actor 22 on . says Have you seen the kitchen? I think there's carrot soup.
+  W  actor 78 wander on . says Careful with those dark planks in the hall. @ Grandpa stepped on them years ago. We haven't seen him since.
+  K  actor 69 on t says Carrot soup again tonight. It's always carrot soup. @ If you're hungry, there's something in the barrel at the back.
+  J  actor 49 on b says Do you mind? @ ...Well, since you're here, could you pass the soap?
+  S  start on .
+  1  floor 1 give money 15        # loose coins (action key here)
+  2  floor 1 up 4 give money 30   # in the chest
+  3  floor 1 up 4 give money 20   # in the bedside table
+  4  floor 1 up 4 give magic 10   # in the other bedside table
+  0  floor 7 give life 10         # in the kitchen barrel
+  !  floor 2 give magic 10        # in the wash basin cabinet
+  _  floor 61 trap open exit cellar at 5632 2304 3072 below   # the trap door: drops you into the cellar
+map:
+  ######################################
+  #,,,,,,,,,l,,#.F.....5...s....T...L..#
+  #,w,,,,,,,,,,#.....Q...........1.....#
+  #,,,,,,G,,,,,#.....rrrrrrrr..........#
+  P,,,,,,,,,,,,#.....rrOrrrrr......X...#
+  P,g,,,,,,,,,,#.....rcrrrrrr........7.#
+  P,,,,,,,,,,,,#...U.rrrrrrrrV...H.....#
+  P,,,,,,n,,p,,#.....rrrdrrrr..........#
+  #h,2,,,,,,,,,#.A...rrrrrrrr..5....L..#
+  #,,,,,,,,,,,,#.......................#
+  #####;;;######.......................#
+  #p,,,,,,,,,,,#######+++++#############
+  #,,RRRR,,,,,,,>>>>.......#totttittt8t#
+  #,,RRRR,,Y,,,,>>>>....7..#tttttttKttt#
+  #,,RRRR,,,,,,,>>>>.......#ttttttttttt#
+  #,,RRRR,,,,,,,>>>>.......+tttt9tttttt#
+  #,,,,,,,,,k,,#####.......+tttmtttmttt#
+  #,,,,,,,,,,,,#......__...+ttttttttttt#
+  ####;;;;;#####7.....__...#tttttttt08t#
+  #B,,n3,,,,a,,#...........#jttttttt0tt#
+  P,,,,,,,,,,,,#...........#ttttttttttt#
+  P,,,RRRR,,,,,#...W....1v.#############
+  P,,,RRRR,,,,,#...........#bbebbbbbbbb#
+  P,,,RRRRZ,,p,#...........#bb!bbJbbubb#
+  #,,,RRRR,,,,,#...........+bbbqqqqbbbb#
+  #B,,,,,,,,,,,#......S....+bbbqqqqbbbb#
+  #,,,,,,,,,l,,#6..........+bbbqqqqbbbb#
+  #,,,n4,,,,,,,#...........#bbbqqqqbbfb#
+  #,,,,,,,,,,,,#....EEE....#bbbbbbbbbbb#
+  ##################DDD#################

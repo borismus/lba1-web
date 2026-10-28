@@ -1,0 +1,50 @@
+name: The Sunken Path
+library: 2       # Citadel Island tile set
+template: 2      # borrow lighting and ambience from scene 2
+# The lake is full of identical stepping stones. Most of them sink the
+# moment you step on one. Stand on the sigil (@) on the south shore: the
+# safe stones light up gold, but only while you stay on it. Memorise the
+# path, cross, and claim the chest (action key in front of it) and the
+# swirl that leads out.
+reveal camera: 12 12   # frame the whole stone field from the sigil
+raise: d               # land sits one cell up on a dirt bank; the lake is below
+legend:
+  d  floor 18              # dirt bank under the raised land
+  g  floor 50              # grass
+  .  floor 22              # stone paving
+  ~  floor 99 low          # deep water (drowns)
+  o  floor 81 over ~ hint 188   # safe boulder: gold plank while revealed
+  x  floor 81 over ~ trap ~     # false boulder: vanishes under you
+  @  floor 243 reveal      # the sigil
+  E  floor 238 exit courtyard   # swirl: leave to the courtyard
+  G  floor 22 give money 10
+  $  object 178 on .       # chest
+  L  object 117 on .       # lamp
+  T  object 112 on g       # pine tree
+  R  object 75 on g        # rocks (front edges, so they don't hide the shore)
+  S  start on .
+map:
+  TgTgTgTgTgTgTgTgTgTgTgRg
+  gggggggggggggggggggggggg
+  TgggggggggggEE..$.ggggRg
+  ggggggggggggEE....gggggg
+  Tggggg..L.......GGggggRg
+  gggggg............gggggg
+  Tg~~~~xxxxxxooxxxx~~~~Rg
+  gg~~~~xxxxxxooxxxx~~~~gg
+  Tg~~~~xxooooooxxxx~~~~Rg
+  gg~~~~xxooooooxxxx~~~~gg
+  Tg~~~~xxooxxxxxxxx~~~~Rg
+  gg~~~~xxooxxxxxxxx~~~~gg
+  Tg~~~~xxooooooooxx~~~~Rg
+  gg~~~~xxooooooooxx~~~~gg
+  Tg~~~~xxxxxxxxooxx~~~~Rg
+  gg~~~~xxxxxxxxooxx~~~~gg
+  Tg~~~~xxxxxxxxooxx~~~~Rg
+  gg~~~~xxxxxxxxooxx~~~~gg
+  Tggggg......@@....ggggRg
+  gggggg......@@....gggggg
+  Tggggg..S.........RgggRg
+  gggggg............gggggg
+  RgRgRgRgRgRgRgRgRgRgRgRg
+  gggggggggggggggggggggggg

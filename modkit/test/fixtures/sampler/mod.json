@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "id": "sampler",
+  "name": "Level sampler (test fixture)",
+  "version": "0.0.0",
+  "description": "The levelkit's ASCII-map and house levels, as one mod: a test of the builder against the Python reference.",
+  "requires": { "releases": ["gog-classic"], "features": ["hero-models", "body-pool"] },
+  "ops": ["mod.ops"]
+}

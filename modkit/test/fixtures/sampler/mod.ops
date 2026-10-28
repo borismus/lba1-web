@@ -1,0 +1,10 @@
+# the hero of zoe_outside.txt (as in little-big-rescue)
+body copy 48 as @coat recolor 224:250 dim 250:3
+hero @zoe from file3d 22 body 48 bones 0,1,2,3,4,5,6,7,8,9,11,12,14,15,16,-,-,-,17 \
+     outfit 4 body @coat voice 30:32 22:1.6 0:1.5 99:1.5 101:1.5
+level @house    from levels/bunny_lounge.txt
+level @cast     from levels/cast.txt
+level @cellar   from levels/cellar.txt
+level @court    from levels/courtyard.txt
+level @sunken   from levels/sunken_path.txt
+level @outside  from levels/zoe_outside.txt

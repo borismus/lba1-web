@@ -1,0 +1,41 @@
+name: Cellar
+library: 16      # the Rabbibunny house tile set
+template: 16
+music: 12        # the tavern cellar's music
+house: yes
+ground: 4
+# Under the Rabbibunny house: you fall in through the trap door in the
+# hall. Barrels, grapes, firewood, a chest, and Grandpa. The door leads
+# back up into the hall.
+legend:
+  #  wall
+  .  floor 3               # packed earth
+  a  object 79 on .        # barrel
+  l  object 81 on .        # barrel on its side
+  G  object 95 on .        # grapes
+  j  object 96 on .        # wine jug
+  w  object 82 on .        # firewood
+  o  object 33 on .        # logs
+  h  object 69 on .        # chest
+  $  floor 3 give money 50 # in the chest (action key in front of it)
+  +  floor 3 give life 10  # a bunch of grapes
+  K  actor 28 on . says Oh! Hello. Is the party still going? @ I stepped on those dark planks in '86. Lovely cellar, though. Good grapes. @ The door's right there, but I've grown attached to the place.
+  D  frontdoor
+  E  floor 3 exit bunny_lounge at 9728 1280 11264   # back up into the hall
+  S  start on .
+map:
+  ######################
+  #a.a.a.a.a...G...j.j.#
+  #....................#
+  #....................#
+  #l............++.....#
+  #....................#
+  #..........S......w..#
+  #....................#
+  #l...K...............#
+  #....................#
+  #..h............o....#
+  #..$$................#
+  #....................#
+  #.........EEE........#
+  ##########DDD#########

@@ -264,6 +264,12 @@ do without it, and it must leave the engine exactly as it was while off.
 
 ## Building
 
+The builder is `modkit/` (TypeScript, no dependencies), run by the page in
+the browser; `node modkit/test/same.ts <data> <mod> <dir>` compares its
+output with the Python reference build (levelkit's `build_levels.py --mod`),
+file by file. Today it builds what Little Big Rescue uses (`body copy`,
+`hero`, `level`); the rest of the operations below are the plan.
+
 Input: the base, the mod set in order. For each mod, in order: check its
 `requires`, then apply its operation files in order, resolving names as
 they're defined. A name used before it's defined, a missing base entry, a
@@ -282,7 +288,12 @@ the page points the engine at a folder holding the overlay's archives and
 the base's untouched ones.
 
 Saves belong to a mod set: each has its own save folder, so a mod never
-loads a save made without it (or with a different one).
+loads a save made without it (or with a different one). In the page (one
+mod at a time for now) a mod lives in `/lba/mods/<id>/`: the overlay, the
+package itself (`package/`, so a newer builder can build it again) and
+`saves/`; `web_sys.c` reads the overlay's files in place of the game's and
+puts `*.lba` in `saves/`. The mod's `start` is where "New game" begins; a
+mod not yet played starts there straight away, after the Adeline logo.
 
 ## `mod check`
 

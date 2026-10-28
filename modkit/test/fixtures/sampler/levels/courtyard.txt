@@ -1,0 +1,36 @@
+name: Courtyard test
+library: 2       # Citadel Island tile set (see tilesheet.py)
+template: 2      # borrow lighting and ambience from scene 2
+legend:
+  .  floor 22          # stone paving
+  d  floor 18          # dirt
+  g  floor 50          # grass
+  ~  floor 99          # water
+  #  wall 92 3         # stone block, 3 cells high
+  T  object 112 on g   # pine tree on grass
+  L  object 117 on .   # street lamp on paving
+  B  object 116 on .   # bench
+  F  object 115 on .   # flower pot
+  S  start on .
+map:
+  ################################
+  #..............................#
+  #.L..........ddddd.........L...#
+  #............ddddd.............#
+  #...gggggggg.ddddd.gggggggg....#
+  #...gTggggTg.......gTggggTg....#
+  #...gggggggg..F.F..gggggggg....#
+  #...gggggggg.......gggggggg....#
+  #...gTggggTg.......gTggggTg....#
+  #...gggggggg.......gggggggg....#
+  #..............................#
+  #.......~~~~~~~~~~~~~~~~.......#
+  #.......~~~~~~~~~~~~~~~~.......#
+  #.......~~~~~~~~~~~~~~~~.......#
+  #.......~~~~~~~~~~~~~~~~.......#
+  #..............................#
+  #...B.........S.........B......#
+  #..............................#
+  #.L..........................L.#
+  #..............................#
+  ################################
