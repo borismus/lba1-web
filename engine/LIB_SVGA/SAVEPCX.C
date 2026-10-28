@@ -6,9 +6,9 @@
   ║                                                               ║
   ╚═══════════════════════════════════════════════════════════════╝
 */
-#include "lib_sys/adeline.h"
-#include "lib_sys/lib_sys.h"
-#include "lib_svga/lib_svga.h"
+#include "LIB_SYS/ADELINE.H"
+#include "LIB_SYS/LIB_SYS.H"
+#include "LIB_SVGA/LIB_SVGA.H"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-#include "c_extern.h"
+#include "C_EXTERN.H"
 #include "direct.h"
 
 #include "../LIB386/LIB_SYS/SYS_FILESYSTEM.H"

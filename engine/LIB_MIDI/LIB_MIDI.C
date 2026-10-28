@@ -1,6 +1,6 @@
-#include "lib_sys/adeline.h"
-#include "lib_sys/lib_sys.h"
-#include "lib_midi/lib_midi.h"
+#include "LIB_SYS/ADELINE.H"
+#include "LIB_SYS/LIB_SYS.H"
+#include "LIB_MIDI/LIB_MIDI.H"
 
 // Stub implementations for when AIL32 is not available
 /*

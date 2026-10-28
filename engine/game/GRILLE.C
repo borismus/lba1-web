@@ -1,10 +1,10 @@
 
-#include "c_extern.h"
+#include "C_EXTERN.H"
 
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "grille.h"
+#include "GRILLE.H"
 
 /*══════════════════════════════════════════════════════════════════════════*
 			  █▀▀▀▀ █▀▀▀█  █    █     █     █▀▀▀▀

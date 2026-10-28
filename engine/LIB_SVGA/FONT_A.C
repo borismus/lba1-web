@@ -1,6 +1,6 @@
 
-#include "lib_sys/adeline.h"
-#include "lib_svga/lib_svga.h"
+#include "LIB_SYS/ADELINE.H"
+#include "LIB_SVGA/LIB_SVGA.H"
 
 static void *PtrFont = 0;
 static LONG DxFont = 0;

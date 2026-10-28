@@ -1,2 +1,2 @@
-#include "lib_sys/adeline.h"
+#include "LIB_SYS/ADELINE.H"
 #include "LIB_CD.H"

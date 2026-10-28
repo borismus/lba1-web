@@ -3,9 +3,9 @@
 				  (c) Adeline 1993
  *──────────────────────────────────────────────────────────────────────────*/
 
-#include "lib_sys/adeline.h"
-#include "lib_sys/lib_sys.h"
-#include "lib_mix/lib_mix.h"
+#include "LIB_SYS/ADELINE.H"
+#include "LIB_SYS/LIB_SYS.H"
+#include "LIB_MIX/LIB_MIX.H"
 #include <stdlib.h>
 #include <stdio.h>
 

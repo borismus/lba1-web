@@ -1,4 +1,4 @@
-#include "c_extern.h"
+#include "C_EXTERN.H"
 
 /*
 WORD	GiveMaxLevel( WORD x, WORD y ) ;

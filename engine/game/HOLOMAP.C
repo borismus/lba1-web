@@ -1,4 +1,4 @@
-#include "c_extern.h"
+#include "C_EXTERN.H"
 
 #define STEP_ANGLE 32
 #define SLIG (((1024 / STEP_ANGLE) + 1) * 4)

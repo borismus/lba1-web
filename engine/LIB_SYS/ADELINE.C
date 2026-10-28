@@ -2,13 +2,13 @@
 #include <string.h>
 #include <process.h>
 
-#include "lib_sys/adeline.h"
-#include "lib_sys/lib_sys.h"
+#include "LIB_SYS/ADELINE.H"
+#include "LIB_SYS/LIB_SYS.H"
 
-#include "lib_midi/lib_midi.h"
-#include "lib_samp/lib_wave.h"
-#include "lib_mix/lib_mix.h"
-#include "lib_svga/lib_svga.h"
+#include "LIB_MIDI/LIB_MIDI.H"
+#include "LIB_SAMP/LIB_WAVE.H"
+#include "LIB_MIX/LIB_MIX.H"
+#include "LIB_SVGA/LIB_SVGA.H"
 
 
 char Driver[_MAX_PATH];

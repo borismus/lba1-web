@@ -16,7 +16,7 @@
 // #define LBA_EDITOR 1
 /*-------------------------------------------------------------------------*/
 
-#include "c_extern.h"
+#include "C_EXTERN.H"
 #include "../LIB386/LIB_SYS/SYS_FILESYSTEM.H"
 
 #define PATH_TXT ""

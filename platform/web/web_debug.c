@@ -15,7 +15,7 @@
  * playthrough).
  */
 #include <emscripten.h>
-#include "c_extern.h"
+#include "C_EXTERN.H"
 
 static WORD PendingScene = -1;
 static WORD PendingAt = 0; /* PendingX/Y/Z valid: enter like a door does */

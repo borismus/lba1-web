@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <fcntl.h>
 
-#include "lib_sys/adeline.h"
-#include "lib_sys/lib_sys.h"
+#include "LIB_SYS/ADELINE.H"
+#include "LIB_SYS/LIB_SYS.H"
 
 #define RECOVER_AREA 500
 
