@@ -34,6 +34,13 @@ untested. GOG's *Original Edition* add-on (a DLC of Classic, its own
 installer) installs into the main game's folder and is not a whole game on
 its own. Steam: untested.
 
+**Analytics:** the published page (`*.github.io` only) counts visits and
+a few events with Google Analytics, in consent mode: nothing is stored in
+the browser until the visitor clicks OK on the banner ("Analytics" in the
+footer changes it). Events: `game_added` (the release we recognised),
+`game_add_failed` and `mod_add_failed` (a reason code), `mod_added`, `play`
+(the mod's id, or `original`). Never file names or anything from the game.
+
 **Mods** ([docs/MODS.md](../../docs/MODS.md)): once the game is in, the
 Play screen takes a mod (its zip or folder). The page checks the mod holds
 none of the game's own data, builds it from your copy of the game

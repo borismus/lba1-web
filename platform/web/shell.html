@@ -4,6 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Little Big Adventure</title>
+<script>
+  // Google Analytics, on the published site only, in consent mode: nothing
+  // is stored in the browser until the visitor says OK (the banner below);
+  // until then Google gets cookieless pings. Events (track()) carry codes,
+  // never file names or anything from the player's game files.
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  const GA = 'G-Y3MCETRERC';
+  const analytics = /\.github\.io$/.test(location.hostname);
+  const consent = (() => { try { return localStorage.getItem('analytics'); } catch (e) { return null; } })();
+  gtag('consent', 'default', { analytics_storage: consent === 'yes' ? 'granted' : 'denied',
+    ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+  if (analytics) {
+    const tag = document.createElement('script');
+    tag.async = true;
+    tag.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA;
+    document.head.appendChild(tag);
+    gtag('js', new Date());
+    gtag('config', GA);
+  }
+  const track = (name, params = {}) => { if (analytics) gtag('event', name, params); };
+</script>
 <style>
   :root {
     --bg: #0f1216; --panel: #171b21; --line: #262c35; --text: #d8dde4;
@@ -22,6 +44,11 @@
   footer { display: flex; gap: 18px; justify-content: center; padding: 10px 16px; color: var(--muted); font-size: 13px; }
   footer button { background: none; border: 0; color: inherit; font: inherit; padding: 0; cursor: pointer; }
   footer button:hover { color: var(--text); }
+  #consent { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 10; max-width: calc(100% - 32px);
+    display: flex; gap: 12px; align-items: center; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 8px 10px 8px 14px; font-size: 13px; color: var(--muted); }
+  #consent[hidden] { display: none; }
+  #consent button { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; }
 
   /* the overlays over the canvas: getting the game files, Play, the keys */
   .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
@@ -173,7 +200,12 @@
     <button id="fs">Full screen</button>
     <button id="keysbtn">Controls</button>
     <button id="forget">Use different game files</button>
+    <button id="privacy" hidden>Analytics</button>
   </footer>
+  <div id="consent" hidden>
+    <span>This page counts visits with Google Analytics. Your game files never leave your browser.</span>
+    <button id="consentyes">OK</button><button id="consentno">No thanks</button>
+  </div>
 </main>
 
 <aside id="dev" hidden>
@@ -196,6 +228,22 @@
 <script>
   const params = new URLSearchParams(location.search);
   const $ = id => document.getElementById(id);
+  if (analytics) {
+    $('privacy').hidden = false;
+    $('consent').hidden = consent !== null;
+    const choose = yes => {
+      try { localStorage.setItem('analytics', yes ? 'yes' : 'no'); } catch (e) {}
+      gtag('consent', 'update', { analytics_storage: yes ? 'granted' : 'denied' });
+      $('consent').hidden = true;
+    };
+    $('consentyes').onclick = () => choose(true);
+    $('consentno').onclick = () => choose(false);
+    $('privacy').onclick = () => { $('consent').hidden = false; };
+  }
+  // an error for the player -> a short code for analytics
+  const why = m => [[/Original Edition/, 'original_edition'], [/installer/, 'not_installed'], [/not the whole game/, 'missing_files'],
+    [/look like a zip|unsupported zip|can't unpack/, 'zip'], [/copied from the game/, 'game_data'], [/engine features/, 'features'],
+    [/format|valid JSON|its id/, 'manifest'], [/download/, 'download'], [/no mod\.json/, 'not_a_mod']].find(([r]) => r.test(m || ''))?.[1] || 'other';
   const canvas = $('canvas');
   const status = $('status');
   const dev = params.get('dev') === '1';
@@ -227,6 +275,7 @@
 
   // mod: a stored mod's description (mods.js), or none for the original game
   function start(mod) {
+    track('play', { mod_id: mod ? mod.id : 'original' });
     if (mod) {
       Module.modDir = 'mods/' + mod.id;    // web_sys.c: the mod's files and saves
       // web_debug.c: "New game" starts there; the first time, straight in
@@ -255,12 +304,14 @@
       const entries = await LBA.collect(await picks, progress);
       const game = LBA.find(entries);
       const got = await LBA.install(FS, game, progress);
+      track('game_added', { release: got.releaseId || 'untested', voices: got.voices > 0, music: got.music > 0 });
       progress('Saving the game files in your browser…');
       await new Promise((ok, fail) => FS.syncfs(false, e => e ? fail(e) : ok()));
       progress(`${got.release ? 'Found ' + got.release : "Found the game (a version we haven't tested: trying anyway)"}${got.voices ? ', with voices' : ''}${got.music ? (got.voices ? ' and music' : ', with music') : ''}. ${modUrl ? '' : 'Starting…'}`);
       if (modUrl) { $('setup').hidden = true; showPlay(got); } else start();
     } catch (e) {
       console.warn(e);
+      track('game_add_failed', { reason: why(e.message) });
       $('progress').textContent = '';
       $('error').textContent = e.message || String(e);
     }
@@ -386,7 +437,10 @@
   // check, build and store a package (throws for the player)
   async function addModFiles(files, from) {
     const t0 = performance.now();
-    const mod = await MODS.add(FS, files, LBA.installed(FS), modProgress, from);
+    let mod;
+    try { mod = await MODS.add(FS, files, LBA.installed(FS), modProgress, from); }
+    catch (e) { track('mod_add_failed', { reason: why(e.message), from_link: !!from }); throw e; }
+    track('mod_added', { mod_id: mod.id, from_link: !!from });
     modProgress('Saving it in your browser…');
     await sync();
     modProgress(`Built ${mod.name} in ${((performance.now() - t0) / 1000).toFixed(1)} s.`);
