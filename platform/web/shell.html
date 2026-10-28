@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Big Adventure</title>
+<style>
+  :root {
+    --bg: #0f1216; --panel: #171b21; --line: #262c35; --text: #d8dde4;
+    --muted: #8a94a3; --accent: #e0b34a; --hover: #1f252d; --bad: #e5735e;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  body { display: flex; }
+  main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #stage { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; position: relative; }
+  canvas { width: min(100%, calc((100vh - 48px) * 4 / 3)); aspect-ratio: 4 / 3; height: auto;
+    image-rendering: pixelated; background: #000; outline: none; }
+  :fullscreen canvas { width: min(100vw, calc(100vh * 4 / 3)); }
+  #status { position: absolute; color: var(--muted); }
+  footer { display: flex; gap: 18px; justify-content: center; padding: 10px 16px; color: var(--muted); font-size: 13px; }
+  footer button { background: none; border: 0; color: inherit; font: inherit; padding: 0; cursor: pointer; }
+  footer button:hover { color: var(--text); }
+
+  /* the overlays over the canvas: getting the game files, Play, the keys */
+  .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 10, 13, .94); padding: 16px; }
+  .overlay[hidden] { display: none; }
+  .card { max-width: 520px; text-align: center; }
+  .card h1 { font-size: 24px; margin: 0 0 6px; color: var(--accent); font-weight: 650; }
+  .card p { margin: 8px 0; color: var(--muted); }
+  .card a { color: var(--accent); }
+  #drop { border: 2px dashed var(--line); border-radius: 14px; padding: 32px 24px; margin: 18px 0 12px; transition: .15s; }
+  #drop.over { border-color: var(--accent); background: rgba(224, 179, 74, .06); }
+  #drop b { display: block; font-size: 17px; color: var(--text); margin-bottom: 6px; }
+  .buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+  .btn { font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  .btn:hover { background: var(--hover); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #1b1608; font-weight: 600; }
+  #play .btn.primary { font-size: 18px; padding: 12px 34px; border-radius: 10px; }
+  #progress { min-height: 1.5em; color: var(--text); }
+  #error { color: var(--bad); }
+  .small { font-size: 12.5px; }
+  kbd { display: inline-block; min-width: 22px; padding: 1px 6px; border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 4px; background: var(--panel); font: 12px/1.6 ui-monospace, Menlo, monospace; color: var(--text); }
+  .keys { text-align: left; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 14px auto; width: max-content; }
+
+  /* developer panel (?dev=1) */
+  aside { width: 300px; border-left: 1px solid var(--line); background: var(--panel);
+    display: flex; flex-direction: column; min-height: 0; font-size: 13px; }
+  aside[hidden] { display: none; }
+  header { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  #now { color: var(--muted); margin-top: 4px; }
+  .row { display: flex; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); align-items: center; }
+  aside input, aside button { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line);
+    border-radius: 4px; padding: 5px 8px; }
+  aside button { cursor: pointer; } aside button:hover { background: var(--hover); }
+  #filter { flex: 1; }
+  #chapter { width: 56px; }
+  #rec.on { color: #fff; background: #b3261e; border-color: #b3261e; }
+  #rectime { color: var(--muted); font-variant-numeric: tabular-nums; }
+  #list { overflow: auto; flex: 1; }
+  .island { padding: 10px 14px 4px; color: var(--accent); font-weight: 600; font-size: 12px;
+    text-transform: uppercase; letter-spacing: .04em; }
+  .scene { display: flex; gap: 8px; padding: 4px 14px; cursor: pointer; }
+  .scene:hover { background: var(--hover); }
+  .scene.current { background: var(--hover); box-shadow: inset 3px 0 var(--accent); }
+  .scene span:first-child { color: var(--muted); width: 28px; text-align: right; flex: none; font-variant-numeric: tabular-nums; }
+  .scene .name { flex: 1; min-width: 0; }
+  @media (max-width: 800px) { body { flex-direction: column; } aside { width: auto; height: 45vh; border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<main>
+  <div id="stage">
+    <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
+    <div id="status">Loading…</div>
+
+    <div class="overlay" id="setup" hidden>
+      <div class="card">
+        <h1>Little Big Adventure</h1>
+        <p>The 1994 original, running in your browser, from your own copy of the game:
+          <a href="https://www.gog.com/en/game/little_big_adventure" target="_blank" rel="noopener">Twinsen's Little Big Adventure Classic</a> from GOG.</p>
+        <div id="drop">
+          <b>Drop your copy of the game here</b>
+          the folder it's installed in, a zip of that folder, or on a Mac, the GOG app
+          <div class="buttons">
+            <button class="btn" id="pickdir">Choose folder…</button>
+            <button class="btn" id="pickzip">Choose zip…</button>
+          </div>
+        </div>
+        <div id="progress"></div>
+        <div id="error"></div>
+        <p class="small">Nothing is uploaded: the game files stay in your browser, which keeps them (and your saves) for next time.</p>
+        <input type="file" id="dirinput" webkitdirectory hidden>
+        <input type="file" id="zipinput" accept=".zip,application/zip" multiple hidden>
+      </div>
+    </div>
+
+    <div class="overlay" id="play" hidden>
+      <div class="card">
+        <h1>Little Big Adventure</h1>
+        <div class="buttons"><button class="btn primary" id="playbtn">▶ Play</button></div>
+        <p class="small" id="playinfo"></p>
+      </div>
+    </div>
+
+    <div class="overlay" id="keys" hidden>
+      <div class="card">
+        <h1>Controls</h1>
+        <div class="keys">
+          <span><kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd></span><span>walk, turn</span>
+          <span><kbd>Space</kbd></span><span>action: depends on the behaviour (talk, jump, fight, hide)</span>
+          <span><kbd>Tab</kbd> or <kbd>Ctrl</kbd></span><span>choose a behaviour</span>
+          <span><kbd>5</kbd> <kbd>6</kbd> <kbd>7</kbd> <kbd>8</kbd></span><span>Normal, Athletic, Aggressive, Discreet directly</span>
+          <span><kbd>Esc</kbd></span><span>menu (save, load, options); skip dialogue</span>
+        </div>
+        <div class="buttons"><button class="btn" id="keysclose">Back to the game</button></div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <button id="fs">Full screen</button>
+    <button id="keysbtn">Controls</button>
+    <button id="forget">Use different game files</button>
+  </footer>
+</main>
+
+<aside id="dev" hidden>
+  <header><b>Scene jump</b><div id="now">Not in game yet</div></header>
+  <div class="row">
+    <label for="chapter">Chapter</label><input id="chapter" type="number" min="0" max="20" placeholder="—">
+    <button id="giveall" title="All inventory items, magic level 4, 500 kashes">Give all items</button>
+  </div>
+  <div class="row">
+    <button id="rec" title="Record the game's picture and sound to a video file">● Record</button>
+    <span id="rectime"></span>
+  </div>
+  <div class="row"><input id="filter" placeholder="Filter scenes…"></div>
+  <div id="list"></div>
+</aside>
+
+<script src="vendor/fflate.js"></script>
+<script src="loader.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const $ = id => document.getElementById(id);
+  const canvas = $('canvas');
+  const status = $('status');
+  const dev = params.get('dev') === '1';
+  $('dev').hidden = !dev;
+
+  // The engine starts once the game files are in /lba: the browser's own
+  // storage (IndexedDB, mounted with IDBFS) keeps them, and the saves, from
+  // one visit to the next. First time: the player drops their copy of the
+  // game; later: a Play button (the click also unlocks the browser's sound).
+  let running = false;
+  var Module = {
+    preRun: [() => {
+      FS.mkdir('/lba');
+      FS.mount(IDBFS, {}, '/lba');
+      Module.addRunDependency('game');
+      FS.syncfs(true, err => {
+        if (err) console.warn('stored game files:', err);
+        const have = LBA.installed(FS);
+        if (have) showPlay(have); else showSetup();
+      });
+    }],
+    onRuntimeInitialized: () => { running = true; },
+    canvas,
+    print: t => console.log(t),
+    printErr: t => console.warn(t),
+    setStatus: t => { status.textContent = t; status.style.display = t ? '' : 'none'; },
+    monitorRunDependencies: n => { if (!n) Module.setStatus(''); },
+  };
+
+  function start() {
+    $('setup').hidden = $('play').hidden = true;
+    Module.setStatus('');
+    Module.removeRunDependency('game');
+    canvas.focus();
+  }
+
+  // ── first visit: the player's copy of the game ─────────────────────────
+  function showSetup() {
+    Module.setStatus('');
+    $('setup').hidden = false;
+  }
+  const progress = t => { $('progress').textContent = t; $('error').textContent = ''; };
+  async function take(picks) {
+    try {
+      progress('Looking for the game…');
+      const entries = await LBA.collect(await picks, progress);
+      const game = LBA.find(entries);
+      const got = await LBA.install(FS, game, progress);
+      progress('Saving the game files in your browser…');
+      await new Promise((ok, fail) => FS.syncfs(false, e => e ? fail(e) : ok()));
+      progress(`${got.release ? 'Found ' + got.release : "Found the game (a version we haven't tested: trying anyway)"}${got.voices ? ', with voices' : ''}${got.music ? (got.voices ? ' and music' : ', with music') : ''}. Starting…`);
+      start();
+    } catch (e) {
+      console.warn(e);
+      $('progress').textContent = '';
+      $('error').textContent = e.message || String(e);
+    }
+  }
+  const drop = $('drop');
+  for (const t of ['dragenter', 'dragover'])
+    window.addEventListener(t, e => { if (!$('setup').hidden) { e.preventDefault(); drop.classList.add('over'); } });
+  window.addEventListener('dragleave', e => { if (!e.relatedTarget) drop.classList.remove('over'); });
+  window.addEventListener('drop', e => {
+    if ($('setup').hidden) return;
+    e.preventDefault();
+    drop.classList.remove('over');
+    take(LBA.fromDrop(e.dataTransfer.items));
+  });
+  $('pickdir').onclick = () => $('dirinput').click();
+  $('pickzip').onclick = () => $('zipinput').click();
+  $('dirinput').onchange = e => take(Promise.resolve(LBA.fromInput(e.target.files)));
+  $('zipinput').onchange = e => take(Promise.resolve(LBA.fromInput(e.target.files)));
+
+  // ── later visits ────────────────────────────────────────────────────────
+  function showPlay(have) {
+    Module.setStatus('');
+    $('playinfo').textContent = `${have.release || 'Your copy of the game'}, saved in this browser${have.voices ? '' : ' (no voices found)'}${have.music ? '' : ' (no music found)'}.`;
+    $('play').hidden = false;
+    $('playbtn').focus();
+  }
+  $('playbtn').onclick = start;
+
+  // saves (and the game's config) are written into /lba: store them
+  let syncing = false;
+  const persist = () => {
+    if (!running || syncing) return;
+    syncing = true;
+    FS.syncfs(false, err => { syncing = false; if (err) console.warn('saving:', err); });
+  };
+  setInterval(persist, 5000);
+  addEventListener('pagehide', persist);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) persist(); });
+
+  $('forget').onclick = () => {
+    if (!confirm('Remove the game files (and your saves) from this browser? You can drop them in again any time.')) return;
+    try { LBA.forget(FS); } catch (e) { console.warn(e); }
+    FS.syncfs(false, () => location.reload());
+  };
+  $('fs').onclick = () => { ($('stage').requestFullscreen || $('stage').webkitRequestFullscreen).call($('stage')); canvas.focus(); };
+  $('keysbtn').onclick = () => { $('keys').hidden = false; };
+  $('keysclose').onclick = () => { $('keys').hidden = true; canvas.focus(); };
+
+  // Keep keyboard focus on the game unless typing in the panel.
+  canvas.addEventListener('click', () => canvas.focus());
+
+  // ── developer panel (?dev=1) ────────────────────────────────────────────
+  function inGame() {
+    return running && Module._lba_current_scene() >= 0;  // not before the runtime starts
+  }
+  function jump(id) {
+    const chapter = $('chapter').value;
+    if (inGame()) {
+      if (chapter !== '') Module._lba_set_chapter(+chapter);
+      Module._lba_jump(id);
+      canvas.focus();
+    } else {
+      const p = new URLSearchParams(location.search);
+      p.set('scene', id);
+      if (chapter !== '') p.set('chapter', chapter); else p.delete('chapter');
+      location.search = p.toString();
+    }
+  }
+  $('giveall').onclick = () => {
+    if (inGame()) Module._lba_give_all();
+    else { const p = new URLSearchParams(location.search); p.set('items', 'all'); location.search = p.toString(); }
+    canvas.focus();
+  };
+  if (params.has('chapter')) $('chapter').value = params.get('chapter');
+
+  // Recording: the canvas's frames plus everything the game plays (SDL's
+  // audio node: voices and effects; the music's <audio> elements, which
+  // web_music.c announces through Module.onMusicElement) into one file.
+  const rec = { on: false };
+  function routeMusic(el) {
+    const ctx = Module.SDL2 && Module.SDL2.audioContext;
+    if (!ctx || el._src) return;
+    el._src = ctx.createMediaElementSource(el);
+    el._src.connect(ctx.destination);
+    if (rec.on) el._src.connect(rec.dest);
+  }
+  Module.onMusicElement = el => { if (rec.on) routeMusic(el); };
+  function startRec() {
+    const ctx = Module.SDL2 && Module.SDL2.audioContext;
+    const node = ctx && Module.SDL2.audio && Module.SDL2.audio.scriptProcessorNode;
+    if (!node) { alert('Sound has not started yet: press a key in the game first.'); return; }
+    rec.dest = ctx.createMediaStreamDestination();
+    node.connect(rec.dest);
+    rec.on = true;
+    if (Module.music) {
+      routeMusic(Module.music.el);
+      if (Module.music.el._src) Module.music.el._src.connect(rec.dest);
+    }
+    const stream = new MediaStream([...canvas.captureStream(30).getVideoTracks(),
+                                    ...rec.dest.stream.getAudioTracks()]);
+    const types = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/webm;codecs=vp9,opus', 'video/webm'];
+    rec.type = types.find(t => MediaRecorder.isTypeSupported(t)) || '';
+    rec.chunks = [];
+    rec.mr = new MediaRecorder(stream, { mimeType: rec.type, videoBitsPerSecond: 8e6, audioBitsPerSecond: 192e3 });
+    rec.mr.ondataavailable = e => { if (e.data.size) rec.chunks.push(e.data); };
+    rec.mr.onstop = () => {
+      const blob = new Blob(rec.chunks, { type: rec.type.split(';')[0] || 'video/webm' });
+      const a = document.createElement('a');
+      const d = new Date(), z = n => String(n).padStart(2, '0');
+      const stamp = `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}`;
+      a.href = URL.createObjectURL(blob);
+      a.download = `lba-${stamp}.${rec.type.startsWith('video/mp4') ? 'mp4' : 'webm'}`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    };
+    // Start once the canvas has given its first frame: the recorder stamps
+    // both tracks from their first sample, so starting earlier (sound but no
+    // picture yet) puts the sound late by that much.
+    const probe = document.createElement('video');
+    probe.muted = true;
+    probe.srcObject = new MediaStream(stream.getVideoTracks());
+    probe.play();
+    probe.requestVideoFrameCallback(() => {
+      if (!rec.on) return;
+      rec.mr.start(1000);
+      rec.t0 = Date.now();
+      probe.srcObject = null;
+    });
+    rec.t0 = Date.now();
+    rec.timer = setInterval(() => {
+      const s = Math.floor((Date.now() - rec.t0) / 1000);
+      $('rectime').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }, 500);
+  }
+  function stopRec() {
+    rec.on = false;
+    if (rec.mr.state !== 'inactive') rec.mr.stop();
+    try { Module.SDL2.audio.scriptProcessorNode.disconnect(rec.dest); } catch (e) {}
+    clearInterval(rec.timer);
+    $('rectime').textContent = 'saved';
+  }
+  $('rec').onclick = () => {
+    const b = $('rec');
+    if (rec.on) { stopRec(); b.classList.remove('on'); b.textContent = '● Record'; }
+    else { startRec(); if (rec.on) { b.classList.add('on'); b.textContent = '■ Stop'; } }
+    canvas.focus();
+  };
+
+  let scenes = [];
+  const list = $('list');
+  function render() {
+    const q = $('filter').value.toLowerCase();
+    list.textContent = '';
+    let lastIsland = null;
+    for (const s of scenes) {
+      const label = `${s.island} ${s.place} ${s.id}`.toLowerCase();
+      if (q && !label.includes(q)) continue;
+      if (s.island !== lastIsland) {
+        const h = document.createElement('div'); h.className = 'island'; h.textContent = s.island;
+        list.appendChild(h); lastIsland = s.island;
+      }
+      const row = document.createElement('div'); row.className = 'scene'; row.dataset.id = s.id;
+      const n = document.createElement('span'); n.textContent = s.id;
+      const t = document.createElement('span'); t.className = 'name'; t.textContent = s.place || s.island;
+      row.append(n, t); row.onclick = () => jump(s.id);
+      list.appendChild(row);
+    }
+  }
+  if (dev) {
+    $('filter').oninput = render;
+    fetch('scenes.json').then(r => r.json()).then(d => {
+      const order = [];
+      for (const s of d) if (!order.includes(s.island)) order.push(s.island);
+      scenes = d.slice().sort((a, b) => order.indexOf(a.island) - order.indexOf(b.island) || a.id - b.id);
+      render();
+    });
+    let shown = null;
+    setInterval(() => {
+      if (!inGame()) return;
+      const id = Module._lba_current_scene(), ch = Module._lba_current_chapter();
+      const key = id + '/' + ch;
+      if (key === shown) return;
+      shown = key;
+      const s = scenes.find(x => x.id === id);
+      $('now').textContent = `Scene ${id}${s ? ' · ' + s.island + (s.place ? ', ' + s.place : '') : ''} · chapter ${ch}`;
+      for (const el of list.querySelectorAll('.scene'))
+        el.classList.toggle('current', +el.dataset.id === id);
+    }, 500);
+  }
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

@@ -48,7 +48,7 @@ void Text(WORD x, WORD y, char *msk, ...)
 			switch (toupper(*msk++))
 			{
 			case 'C': /* char */
-				tempo[0] = va_arg(ap, char);
+				tempo[0] = (char)va_arg(ap, int); /* char is promoted to int */
 				tempo[1] = 0;
 				strcat(str_out, tempo);
 				l++;
@@ -61,7 +61,7 @@ void Text(WORD x, WORD y, char *msk, ...)
 				break;
 
 			case 'B': /* byte */
-				strcat(str_out, ltoa(va_arg(ap, UBYTE), tempo, 10));
+				strcat(str_out, ltoa((UBYTE)va_arg(ap, int), tempo, 10));
 				l += strlen(tempo);
 				break;
 

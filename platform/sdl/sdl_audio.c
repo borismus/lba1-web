@@ -93,6 +93,22 @@ static SDL_AudioDeviceID snd_dev; /* 0 = silent mode (no device)     */
 static LONG snd_outfreq = 22000;  /* actual output rate              */
 static LONG snd_gain = 65536;     /* 16.16 wave*master gain          */
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+/* PORT: is a voice (handle 0x1234, MESSAGE.C SPEAK_SAMPLE) playing? The
+   page's music player asks, to turn the music down under speech
+   (web/web_music.c). */
+EMSCRIPTEN_KEEPALIVE int PORT_VoicePlaying(void)
+{
+	int n;
+
+	for (n = 0; n < SND_MAX_CHANNELS; n++)
+		if (snd_chan[n].active && snd_chan[n].handle == 0x1234)
+			return 1;
+	return 0;
+}
+#endif
+
 static void snd_lock(void)
 {
 	if (snd_dev)

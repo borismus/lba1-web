@@ -108,6 +108,7 @@ LONG ReadLongCDR(LONG start, LONG nbsect, void *buffer)
 /* MIDI / AIL32 (LIB_MIDI/LIB_MIDI.H)                                  */
 /* ================================================================== */
 /* TODO: hook a real music backend later.                              */
+#ifndef __EMSCRIPTEN__ /* the web build has its own: web_music.c */
 WORD Midi_Driver_Enable = 0; /* FALSE: engine uses InitTimer, no XMI   */
 LONG MaxVolume = 100;
 
@@ -134,13 +135,16 @@ void WaitFadeMidi(void) {}
 void VolumeMidi(WORD volume) { (void)volume; }
 void DoLoopMidi(void) {}
 void InitPathMidiSampleFile(UBYTE *path) { (void)path; }
+#endif
 
 /* the DOS build drove the 50 Hz tick from the AIL timer when MIDI was
  * active; route to the SDL timer so time always advances */
+#ifndef __EMSCRIPTEN__
 void InitTimer(void);
 void InitMidiTimer(void)
 {
 	InitTimer();
 }
+#endif
 
 /* Wave / sample driver + Mixer: implemented in sdl_audio.c            */

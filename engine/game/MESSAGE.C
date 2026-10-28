@@ -580,7 +580,11 @@ void InitFileNar(char *file, LONG from)
 								 // en chantier... {:) --D 	(un ouvrier, je sais, il est nul celui la, désolé...)
 	Seek(FdNar, 0L, SEEK_START);
 	wr = Read(FdNar, BufMemoSeek, offset);
-	if (wr != offset)
+	/* PORT: Read() returns the item count (1), not bytes - see above. This
+	 * used to be harmless because CloseFdNar() was a no-op; with it
+	 * restored, "wr != offset" closed every voice bank and silenced all
+	 * speech. */
+	if (wr != 1)
 	{
 		CloseFdNar();
 		return;
@@ -1353,6 +1357,14 @@ void CloseDial()
 /*-------------------------------------------------------------------------*/
 //  			     D I A L    C D R O M
 /*-------------------------------------------------------------------------*/
+/* PORT: a scene jump from the web panel ends any dialog in progress, the
+ * same way Esc does, so the main loop gets to apply it (web_debug.c). */
+#ifdef __EMSCRIPTEN__
+#define JUMPING PORT_JumpPending()
+#else
+#define JUMPING 0
+#endif
+
 void Dial(LONG text)
 {
 	if (1) { //CDEnable
@@ -1370,7 +1382,7 @@ void Dial(LONG text)
 		if ((!FlagDisplayText) // Pas de texte et Voix OK
 			AND(ret))
 		{
-			while ((TestSpeak())AND(Key != K_ESC))
+			while ((TestSpeak())AND(Key != K_ESC) AND !JUMPING)
 				;
 			StopSpeak();
 			RestoreClip();
@@ -1385,18 +1397,18 @@ void Dial(LONG text)
 			TestSpeak();
 			if (ret == 2) /*      Attente de Touche       */
 			{
-				while ((Key)
+				while (((Key)
 						OR(Fire)
-							OR(Joy))
+							OR(Joy)) AND !JUMPING)
 					TestSpeak(); // Tu relaches ?
 
 				while ((!Key)
 						AND(!Fire)
-							AND(!Joy))
+							AND(!Joy) AND !JUMPING)
 					TestSpeak(); // Tu appuies ?
 			}
 
-			if (Key == K_ESC) //	Player Abort...
+			if (Key == K_ESC OR JUMPING) //	Player Abort...
 			{
 				flagabort = 1;
 				break;
@@ -1411,10 +1423,10 @@ void Dial(LONG text)
 		CloseDial();
 		if ((ret == 0) AND(!flagabort))
 		{
-			while (!((!Key)AND(!Fire) AND(!Joy)))
+			while (!((!Key)AND(!Fire) AND(!Joy)) AND !JUMPING)
 				;
 
-			while ((!Key)AND(!Fire) AND(!Joy))
+			while ((!Key)AND(!Fire) AND(!Joy) AND !JUMPING)
 				;
 		}
 		/*
@@ -1437,24 +1449,24 @@ void Dial(LONG text)
 			ret = NextDialCar();
 			if (ret == 2) /*      Attente de Touche       */
 			{
-				while (!((!Key)AND(!Fire) AND(!Joy)))
+				while (!((!Key)AND(!Fire) AND(!Joy)) AND !JUMPING)
 					;
-				if (Key == K_ESC)
+				if (Key == K_ESC OR JUMPING)
 					break;
-				while ((!Key)AND(!Fire) AND(!Joy))
+				while ((!Key)AND(!Fire) AND(!Joy) AND !JUMPING)
 					;
 			}
 
-			if ((ret == 0) OR(Key == K_ESC))
+			if ((ret == 0) OR(Key == K_ESC) OR JUMPING)
 				break;
 		}
 		CloseDial();
 		if (ret == 0)
 		{
-			while (!((!Key)AND(!Fire) AND(!Joy)))
+			while (!((!Key)AND(!Fire) AND(!Joy)) AND !JUMPING)
 				;
 
-			while ((!Key)AND(!Fire) AND(!Joy))
+			while ((!Key)AND(!Fire) AND(!Joy) AND !JUMPING)
 				;
 		}
 		/*
@@ -1482,14 +1494,16 @@ void MyDial(WORD nummess) // attends une touche si autre page sinon continue
 			TestSpeak();
 			if (dialstat == 2) // encore 1 page
 			{
-				while (Key OR Fire OR Joy)
+				while ((Key OR Fire OR Joy) AND !JUMPING)
 					TestSpeak();
-				while (!Key AND !Fire AND !Joy)
+				while (!Key AND !Fire AND !Joy AND !JUMPING)
 					TestSpeak();
+				if (JUMPING)
+					break;
 			}
 		}
 
-		while (TestSpeak())
+		while (TestSpeak() AND !JUMPING)
 			; // Wait until silence
 
 		StopSpeak(); //	Security
@@ -1503,10 +1517,12 @@ void MyDial(WORD nummess) // attends une touche si autre page sinon continue
 			dialstat = NextDialCar();
 			if (dialstat == 2) // encore 1 page
 			{
-				while (Key OR Fire OR Joy)
+				while ((Key OR Fire OR Joy) AND !JUMPING)
 					;
-				while (!Key AND !Fire AND !Joy)
+				while (!Key AND !Fire AND !Joy AND !JUMPING)
 					;
+				if (JUMPING)
+					break;
 			}
 		}
 

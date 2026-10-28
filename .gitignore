@@ -59,3 +59,7 @@ NEXT-SESSION-TODO.md
 # Local tool settings, and the temporary files they write while you work —
 # those appear and vanish mid-command, which is enough to break `git add -A`.
 .claude/
+
+# web build (platform/web): the engine, and any game data staged for local runs
+platform/web/build/
+.env

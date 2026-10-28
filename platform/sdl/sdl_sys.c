@@ -18,9 +18,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef __EMSCRIPTEN__
 #include <io.h>
-#include <time.h>
 #include <sys/utime.h>
+#endif
+#include <time.h>
 #include "port.h"
 
 /* ------------------------------------------------------------------ */
@@ -163,6 +165,12 @@ static UBYTE Sdl2Dos(SDL_Scancode sc)
 
 	if ((unsigned)sc >= SDL_NUM_SCANCODES)
 		return 0;
+#ifdef __EMSCRIPTEN__
+	/* browser: Tab is a second Ctrl (behaviour menu) — macOS takes
+	 * Ctrl+arrows for switching desktops. The game never reads Tab. */
+	if (sc == SDL_SCANCODE_TAB)
+		return 29;
+#endif
 	return tab[sc];
 }
 
@@ -451,6 +459,7 @@ char *ultoa(unsigned long value, char *buf, int radix)
 	return buf;
 }
 
+#ifndef __EMSCRIPTEN__ /* web: Touch + SYS_Find* live in platform/web/web_sys.c */
 /* FILES_A.C: Touch(filename) — refresh the file date */
 void Touch(UBYTE *filename)
 {
@@ -506,6 +515,8 @@ void SYS_FindClose(SYS_FileInfo *info)
 		info->platform_handle = NULL;
 	}
 }
+
+#endif
 
 unsigned SYS_GetDrive(void)
 {

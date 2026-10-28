@@ -116,13 +116,12 @@ static void SaveShotBMP(const Uint32 *argb, int w, int h)
 	printf("SDL shim: saved %s\n", name);
 }
 
-static int VideoThreadMain(void *arg)
+static SDL_Window *win;
+static SDL_Renderer *ren;
+static SDL_Texture *tex640, *tex320;
+
+static void VideoInit(void)
 {
-	SDL_Window *win;
-	SDL_Renderer *ren;
-	SDL_Texture *tex640, *tex320, *tex;
-	static Uint32 argb[640 * 480];
-	int x, y, w, h;
 
 	win = SDL_CreateWindow("LBA1 SDL shim",
 						   SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -135,9 +134,16 @@ static int VideoThreadMain(void *arg)
 	tex320 = SDL_CreateTexture(ren, SDL_PIXELFORMAT_ARGB8888,
 							   SDL_TEXTUREACCESS_STREAMING, 320, 200);
 
-	SDL_AtomicSet(&VidReady, 1);
+}
 
-	while (SDL_AtomicGet(&VidRun))
+/* One iteration of the presentation loop: pump events, advance the timer,
+ * convert Phys+palette and present. The PC build runs it on a thread; the
+ * web build calls it from PORT_Yield() inside the engine's busy-waits. */
+static void VideoStep(void)
+{
+	SDL_Texture *tex;
+	static Uint32 argb[640 * 480];
+	int x, y, w, h;
 	{
 		SDL_Event ev;
 
@@ -203,7 +209,18 @@ static int VideoThreadMain(void *arg)
 		SDL_RenderClear(ren);
 		SDL_RenderCopy(ren, tex, NULL, NULL);
 		SDL_RenderPresent(ren);
+	}
+}
 
+#ifndef __EMSCRIPTEN__
+static int VideoThreadMain(void *arg)
+{
+	VideoInit();
+	SDL_AtomicSet(&VidReady, 1);
+
+	while (SDL_AtomicGet(&VidRun))
+	{
+		VideoStep();
 		SDL_Delay(10);
 	}
 
@@ -214,6 +231,38 @@ static int VideoThreadMain(void *arg)
 	return 0;
 }
 
+#endif /* !__EMSCRIPTEN__ */
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+
+static int VidInited = 0;
+
+static void EnsureVideoThread(void)
+{
+	if (!VidInited)
+	{
+		VideoInit();
+		VidInited = 1;
+	}
+}
+
+/* Called (via web_hooks.h) whenever the engine reads Key/Joy/Fire/TimerRef.
+ * Advances the timer on every call; at ~60 Hz presents a frame and yields
+ * to the browser (Asyncify) so input events and canvas updates get through. */
+void PORT_Yield(void)
+{
+	static Uint32 last = 0;
+	Uint32 now = SDL_GetTicks();
+
+	PORT_TimerCatchUp();
+	if (!VidInited || now - last < 16)
+		return;
+	last = now;
+	VideoStep();
+	emscripten_sleep(0);
+}
+#else
 static void EnsureVideoThread(void)
 {
 	if (VidThread)
@@ -224,6 +273,7 @@ static void EnsureVideoThread(void)
 	while (!SDL_AtomicGet(&VidReady))
 		SDL_Delay(1);
 }
+#endif
 
 /* ------------------------------------------------------------------ */
 /* mode init (INITSVGA.ASM / INITMODE.C equivalents)                   */

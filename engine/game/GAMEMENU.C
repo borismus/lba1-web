@@ -2843,15 +2843,25 @@ LONG MainGameMenu()
 	{
 		InitDial(0); //	SYS
 
+#ifdef __EMSCRIPTEN__
+		if (!PORT_DebugAutoStart()) /* PORT: no menu theme when ?scene= skips the menu */
+#endif
+		{
 		if (CDEnable) {
 			PlayCdTrack(9);
 		} else {
 			PlayMidiFile(9);
 		}
+		}
 		HQ_StopSample();
 
 		GetMultiText(49, PleaseWait);
 
+#ifdef __EMSCRIPTEN__
+		if (PORT_DebugAutoStart()) /* PORT: ?scene= starts a new game directly */
+			select = 20;
+		else
+#endif
 		select = DoGameMenu(GameMainMenu);
 		switch (select) // num mess
 		{

@@ -1,0 +1,602 @@
+[
+{
+"id": 0,
+"island": "Citadel Island",
+"place": "Prison"
+},
+{
+"id": 1,
+"island": "Citadel Island",
+"place": "outside the citadel"
+},
+{
+"id": 2,
+"island": "Citadel Island",
+"place": "near the tavern"
+},
+{
+"id": 3,
+"island": "Citadel Island",
+"place": "near the pharmacy"
+},
+{
+"id": 4,
+"island": "Citadel Island",
+"place": "near twinsens house"
+},
+{
+"id": 5,
+"island": "Citadel Island",
+"place": "inside Twinsens house"
+},
+{
+"id": 6,
+"island": "Citadel Island",
+"place": "Harbor"
+},
+{
+"id": 7,
+"island": "Citadel Island",
+"place": "Pharmacy"
+},
+{
+"id": 8,
+"island": "White Leaf Desert",
+"place": "Temple of B\u00fa 1st scene"
+},
+{
+"id": 9,
+"island": "Hamalayi Mountains",
+"place": "landing place"
+},
+{
+"id": 10,
+"island": "Principal Island",
+"place": "Library"
+},
+{
+"id": 11,
+"island": "Principal Island",
+"place": "Harbor"
+},
+{
+"id": 12,
+"island": "Principal Island",
+"place": "outside the fortress"
+},
+{
+"id": 13,
+"island": "Principal Island",
+"place": "Lupin Burg"
+},
+{
+"id": 14,
+"island": "Citadel Island",
+"place": "Tavern"
+},
+{
+"id": 15,
+"island": "Hamalayi Mountains",
+"place": "Rabbibunny village"
+},
+{
+"id": 16,
+"island": "Citadel Island",
+"place": "inside a Rabbibunny house"
+},
+{
+"id": 17,
+"island": "Principal Island",
+"place": "Ruins"
+},
+{
+"id": 18,
+"island": "Principal Island",
+"place": "outside the library"
+},
+{
+"id": 19,
+"island": "Principal Island",
+"place": "Militairy camp"
+},
+{
+"id": 20,
+"island": "Citadel Island",
+"place": "Architects house"
+},
+{
+"id": 21,
+"island": "Citadel Island",
+"place": "secret chamber in the house"
+},
+{
+"id": 22,
+"island": "Principal Island",
+"place": "Ticket office"
+},
+{
+"id": 23,
+"island": "Principal Island",
+"place": "Prison"
+},
+{
+"id": 24,
+"island": "Principal Island",
+"place": "Port Belooga"
+},
+{
+"id": 25,
+"island": "Principal Island",
+"place": "Peg Leg Street"
+},
+{
+"id": 26,
+"island": "Principal Island",
+"place": "Shop"
+},
+{
+"id": 27,
+"island": "Principal Island",
+"place": "Locksmith"
+},
+{
+"id": 28,
+"island": "Principal Island",
+"place": "inside a Rabbibunny house"
+},
+{
+"id": 29,
+"island": "Principal Island",
+"place": "Astronimers House"
+},
+{
+"id": 30,
+"island": "Principal Island",
+"place": "Tavern"
+},
+{
+"id": 31,
+"island": "Principal Island",
+"place": "Basement of the Astronomer"
+},
+{
+"id": 32,
+"island": "Principal Island",
+"place": "Stables"
+},
+{
+"id": 33,
+"island": "Citadel Island",
+"place": "Cellar of the Tavern"
+},
+{
+"id": 34,
+"island": "Citadel Island",
+"place": "Sewer of the 1st scene"
+},
+{
+"id": 35,
+"island": "Citadel Island",
+"place": "Warehouse"
+},
+{
+"id": 36,
+"island": "White Leaf Desert",
+"place": "outside the Temple of B\u00fa"
+},
+{
+"id": 37,
+"island": "Principal Island",
+"place": "outside the water tower"
+},
+{
+"id": 38,
+"island": "Principal Island",
+"place": "inside the water tower"
+},
+{
+"id": 39,
+"island": "White Leaf Desert",
+"place": "Militairy camp"
+},
+{
+"id": 40,
+"island": "White Leaf Desert",
+"place": "Temple of B\u00fa 2nd scene"
+},
+{
+"id": 41,
+"island": "White Leaf Desert",
+"place": "Temple of B\u00fa 3rd scene"
+},
+{
+"id": 42,
+"island": "Proxima Island",
+"place": "Proxim City"
+},
+{
+"id": 43,
+"island": "Proxima Island",
+"place": "Museum"
+},
+{
+"id": 44,
+"island": "Proxima Island",
+"place": "near the Inventors house"
+},
+{
+"id": 45,
+"island": "Proxima Island",
+"place": "upper rune stone"
+},
+{
+"id": 46,
+"island": "Proxima Island",
+"place": "lower rune stone"
+},
+{
+"id": 47,
+"island": "Proxima Island",
+"place": "befor the upper rune stone"
+},
+{
+"id": 48,
+"island": "Proxima Island",
+"place": "Forgers house"
+},
+{
+"id": 49,
+"island": "Proxima Island",
+"place": "Prison"
+},
+{
+"id": 50,
+"island": "Proxima Island",
+"place": "Shop"
+},
+{
+"id": 51,
+"island": "Proxima Island",
+"place": "Sewer"
+},
+{
+"id": 52,
+"island": "Principal Island",
+"place": "house at Peg Leg Street"
+},
+{
+"id": 53,
+"island": "Proxima Island",
+"place": "Grobo house"
+},
+{
+"id": 54,
+"island": "Proxima Island",
+"place": "Inventors house"
+},
+{
+"id": 55,
+"island": "Citadel Island",
+"place": "Sewer (secret)"
+},
+{
+"id": 56,
+"island": "Principal Island",
+"place": "Sewer (secret)"
+},
+{
+"id": 57,
+"island": "White Leaf Desert",
+"place": "Maze"
+},
+{
+"id": 58,
+"island": "Principal Island",
+"place": "House with the TV"
+},
+{
+"id": 59,
+"island": "Rebelion Island",
+"place": "Harbor"
+},
+{
+"id": 60,
+"island": "Rebelion Island",
+"place": "Rebel camp"
+},
+{
+"id": 61,
+"island": "Some room (cut-out ?)",
+"place": ""
+},
+{
+"id": 62,
+"island": "Hamalayi Mountains",
+"place": "1st fighting scene"
+},
+{
+"id": 63,
+"island": "Hamalayi Mountains",
+"place": "2nd fighting scene"
+},
+{
+"id": 64,
+"island": "Hamalayi Mountains",
+"place": "Prison"
+},
+{
+"id": 65,
+"island": "Hamalayi Mountains",
+"place": "outside the transporter"
+},
+{
+"id": 66,
+"island": "Hamalayi Mountains",
+"place": "inside the transporter"
+},
+{
+"id": 67,
+"island": "Hamalayi Mountains",
+"place": "Mutation centre 1st scene"
+},
+{
+"id": 68,
+"island": "Hamalayi Mountains",
+"place": "Mutation centre 2nd scene"
+},
+{
+"id": 69,
+"island": "Hamalayi Mountains",
+"place": "3rd fighting scene"
+},
+{
+"id": 70,
+"island": "Hamalayi Mountains",
+"place": "Entrance to the prison"
+},
+{
+"id": 71,
+"island": "Hamalayi Mountains",
+"place": "outside the prison"
+},
+{
+"id": 72,
+"island": "Hamalayi Mountains",
+"place": "Catamaran dock"
+},
+{
+"id": 73,
+"island": "Hamalayi Mountains",
+"place": "Bunker near clear water"
+},
+{
+"id": 74,
+"island": "Tippet Island",
+"place": "Village"
+},
+{
+"id": 75,
+"island": "Tippet Island",
+"place": "Secret passage scene 2"
+},
+{
+"id": 76,
+"island": "Tippet Island",
+"place": "near the bar"
+},
+{
+"id": 77,
+"island": "Tippet Island",
+"place": "Secret passage scene 1"
+},
+{
+"id": 78,
+"island": "Tippet Island",
+"place": "near the Dino-Fly"
+},
+{
+"id": 79,
+"island": "Tippet Island",
+"place": "Secret passage scene 3"
+},
+{
+"id": 80,
+"island": "Tippet Island",
+"place": "Twinsun Cafe"
+},
+{
+"id": 81,
+"island": "Hamalayi Mountains",
+"place": "Sacret Carrot"
+},
+{
+"id": 82,
+"island": "Hamalayi Mountains",
+"place": "Backdoor of the prison"
+},
+{
+"id": 83,
+"island": "Fortress Island",
+"place": "inside the fortress"
+},
+{
+"id": 84,
+"island": "Fortress Island",
+"place": "outside the forstress"
+},
+{
+"id": 85,
+"island": "Fortress Island",
+"place": "Secret passage scene 1"
+},
+{
+"id": 86,
+"island": "Fortress Island",
+"place": "Secret in the fortress"
+},
+{
+"id": 87,
+"island": "Fortress Island",
+"place": "near Zoes cell"
+},
+{
+"id": 88,
+"island": "Fortress Island",
+"place": "Swimming pool"
+},
+{
+"id": 89,
+"island": "Fortress Island",
+"place": "Cloning centre"
+},
+{
+"id": 90,
+"island": "Fortress Island",
+"place": "Rune stone"
+},
+{
+"id": 91,
+"island": "Hamalayi Mountains",
+"place": "Behind th sacret carrot"
+},
+{
+"id": 92,
+"island": "Hamalayi Mountains",
+"place": "Clear water lake"
+},
+{
+"id": 93,
+"island": "Fortress Island",
+"place": "outside fortress destroyed"
+},
+{
+"id": 94,
+"island": "Brundle Island",
+"place": "outside the teleportation"
+},
+{
+"id": 95,
+"island": "Brundle Island",
+"place": "inside the teleportation"
+},
+{
+"id": 96,
+"island": "Hamalayi Mountains",
+"place": "Ski resort"
+},
+{
+"id": 97,
+"island": "Brundle Island",
+"place": "Docks"
+},
+{
+"id": 98,
+"island": "Brundle Island",
+"place": "Secret room"
+},
+{
+"id": 99,
+"island": "Brundle Island",
+"place": "near the telepods"
+},
+{
+"id": 100,
+"island": "Fortress Island",
+"place": "Docks"
+},
+{
+"id": 101,
+"island": "Tippet Island",
+"place": "Shop"
+},
+{
+"id": 102,
+"island": "Principal Island",
+"place": "house in port Belooga"
+},
+{
+"id": 103,
+"island": "Brundle Island",
+"place": "Painters house"
+},
+{
+"id": 104,
+"island": "Citadel Island",
+"place": "Ticket Office"
+},
+{
+"id": 105,
+"island": "Principal Island",
+"place": "inside the fortress"
+},
+{
+"id": 106,
+"island": "Polar Island",
+"place": "2nd scene"
+},
+{
+"id": 107,
+"island": "Polar Island",
+"place": "3rd scene"
+},
+{
+"id": 108,
+"island": "Polar Island",
+"place": "Before the rocky peak"
+},
+{
+"id": 109,
+"island": "Polar Island",
+"place": "4th scene"
+},
+{
+"id": 110,
+"island": "Polar Island",
+"place": "The rocky peak"
+},
+{
+"id": 111,
+"island": "Polar Island",
+"place": "on the rocky peak"
+},
+{
+"id": 112,
+"island": "Polar Island",
+"place": "Before the end room"
+},
+{
+"id": 113,
+"island": "Polar Island",
+"place": "Final Battle"
+},
+{
+"id": 114,
+"island": "Polar Island",
+"place": "end scene"
+},
+{
+"id": 115,
+"island": "Polar Island",
+"place": "1st scene"
+},
+{
+"id": 116,
+"island": "Citadel Island",
+"place": "end sequence (1)"
+},
+{
+"id": 117,
+"island": "Citadel Island",
+"place": "end sequence (2)"
+},
+{
+"id": 118,
+"island": "Citadel Island",
+"place": "Twinsens house destroyed"
+},
+{
+"id": 119,
+"island": "Credits List Sequence",
+"place": ""
+}
+]

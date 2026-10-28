@@ -247,6 +247,10 @@ void InitGame(int argc, UBYTE *argv[])
 		}
 	}
 
+#ifdef __EMSCRIPTEN__
+	PORT_DebugHook(); /* PORT: ?scene= / page jump requests (platform/web/web_debug.c) */
+#endif
+
 	FadeToBlack(PtrPal);
 	Cls();
 	Flip();
@@ -377,6 +381,9 @@ LONG MainLoop()
 		/*		CoulText( 15, 0 ) ;
 				Text( 0,0, "%FTimerRef: %l", TimerRef ) ;	*/
 
+#ifdef __EMSCRIPTEN__
+		PORT_DebugHook(); /* PORT: page jump requests (platform/web/web_debug.c) */
+#endif
 		/*-------------------------------------------------------------------------*/
 		if (NewCube != -1)
 		{
@@ -395,6 +402,24 @@ LONG MainLoop()
 		MyJoy = Joy;
 		MyFire = Fire; //& ~32 ;
 		MyKey = Key;
+
+#ifdef __EMSCRIPTEN__
+		/* browser: 5..8 switch behaviour directly (Mac F-keys need fn, and
+		 * Ctrl+arrows is taken by macOS; 1..4 are already weapons). Same
+		 * call the life script's SET_COMPORTEMENT makes: no menu flash, no
+		 * full redraw, once per key press. */
+		{
+			static WORD lastkey = 0;
+
+			if ((MyKey >= K_5) AND(MyKey <= K_8) AND(MyKey != lastkey)
+					AND(ListObjet[NUM_PERSO].Body != -1)
+						AND(ListObjet[NUM_PERSO].Move == MOVE_MANUAL))
+			{
+				SetComportement(C_NORMAL + MyKey - K_5);
+			}
+			lastkey = MyKey;
+		}
+#endif
 
 #ifdef PORT_NDS
 		/* touch UI: one-shot key injection, consumed here so a tap is
@@ -1523,8 +1548,11 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 	if (!Screen)
 		TheEnd(NOT_ENOUGH_MEM, "Screen");
 
-#ifndef SKIP_INTRO
-
+#if !defined(SKIP_INTRO)
+#ifdef __EMSCRIPTEN__
+	if (PORT_DebugLogo()) /* PORT: web skips the 4 s logo, unless ?logo=1 */
+#endif
+	{
 	// logo adeline
 	AdelineLogo();
 
@@ -1534,6 +1562,7 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 	{
 		if (Key OR Fire OR Joy)
 			break;
+	}
 	}
 #endif
 
@@ -1719,6 +1748,11 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 	}
 
 #ifndef SKIP_INTRO
+#ifdef __EMSCRIPTEN__
+	if (!PORT_DebugAutoStart()) /* PORT: ?scene= skips the logos and intro */
+	{
+#endif
+#ifndef __EMSCRIPTEN__ /* PORT: web skips the Relentless and EA logos */
 	// bumper
 	FadeToBlack(PalettePcx);
 
@@ -1735,20 +1769,29 @@ void lba_main(int argc, UBYTE *argv[]) /* PORT: was main(); SDL wrapper in platf
 	RessPict(RESS_BUMPER_EA_PCR);
 	TimerPause(2);
 	FadeToBlack(PalettePcx);
+#endif
 
 	// FLA intro
 
 	PlayAnimFla("DRAGON3");
+#ifdef __EMSCRIPTEN__
+	}
+#endif
 #endif
 
 	// main game menu
 
 	//	FadeToBlack( PalettePcx ) ;
 
+#ifdef __EMSCRIPTEN__
+	if (!PORT_DebugAutoStart()) /* PORT: ?scene= goes straight in: no menu picture */
+#endif
+	{
 	Load_HQR(PATH_RESSOURCE "ress.hqr", Screen, RESS_MENU_PCR);
 	CopyScreen(Screen, Log);
 	Flip();
 	FadeToPal(PtrPal);
+	}
 
 	MainGameMenu();
 
