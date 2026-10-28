@@ -21,6 +21,7 @@ and developing.
 | `engine/` | the 1994 game and library code, C, with the port's fixes |
 | `translate/` | the original's x86 assembly modules, rewritten in C |
 | `platform/sdl/` | the SDL2 layer (video, audio, input, files) the web build runs on |
+| [`docs/MODS.md`](docs/MODS.md) | the mod format (draft): mods as operations on the player's own copy |
 
 ## Where the engine comes from
 
