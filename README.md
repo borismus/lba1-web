@@ -5,6 +5,10 @@ to WebAssembly. You bring your own copy of the game: drop its folder (or a
 zip of it) onto the page, and it plays. Nothing of the game is in this
 repository or on the server, and your files never leave your browser.
 
+**Play it: https://borismus.github.io/lba1-web/** · with a mod:
+[Relentless: Zoe's Adventure](https://borismus.github.io/lba1-web/?mod=mods/zoes-adventure.zip),
+[The Cast](https://borismus.github.io/lba1-web/?mod=mods/the-cast.zip)
+
 **Which copy:** GOG's [*Twinsen's Little Big Adventure
 Classic*](https://www.gog.com/en/game/little_big_adventure). Its install
 folder has the original 1994 DOS files (`Speedrun/Windows`), which is what
