@@ -267,7 +267,8 @@ do without it, and it must leave the engine exactly as it was while off.
 
 The builder is `modkit/` (TypeScript, no dependencies), run by the page in
 the browser; `node modkit/test/same.ts <data> <mod> <dir>` compares its
-output with the Python reference build (levelkit's `build_levels.py --mod`),
+output with the Python reference build it was ported from (levelkit's
+`build_levels.py --mod`, kept privately),
 file by file. Today it builds what Relentless: Zoe's Adventure uses (`body copy`,
 `hero`, `level`); the rest of the operations below are the plan.
 

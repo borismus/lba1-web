@@ -1,5 +1,5 @@
-// Text level format -> LBA1 grid + scene. The format is documented in the
-// Python reference (levelkit/level.py): a level file has meta lines
+// Text level format -> LBA1 grid + scene. The format: docs/LEVELS.md (a port
+// of levelkit/level.py, not public). A level file has meta lines
 // ('key: value'), a legend (a symbol, then what it is) and a map (rows along
 // +z, columns along +x; ' ' is void).
 import { type Cells, type Layout, SX, SY, SZ, CLEAR, cell, emptyCells } from './grid.ts';
