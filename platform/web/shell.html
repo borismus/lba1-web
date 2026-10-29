@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Little Big Adventure</title>
 <script>
-  // Google Analytics, on the published site only, in consent mode: nothing
+  // Google Analytics, on the published site only (and not when a browser is
+  // automated), in consent mode: nothing
   // is stored in the browser until the visitor says OK (the banner below);
   // until then Google gets cookieless pings. Events (track()) carry codes,
   // never file names or anything from the player's game files.
   window.dataLayer = window.dataLayer || [];
   function gtag() { dataLayer.push(arguments); }
   const GA = 'G-Y3MCETRERC';
-  const analytics = /\.github\.io$/.test(location.hostname);
+  const analytics = /\.github\.io$/.test(location.hostname) && !navigator.webdriver;  // (not automated runs: tools/playtest.mjs)
   const consent = (() => { try { return localStorage.getItem('analytics'); } catch (e) { return null; } })();
   gtag('consent', 'default', { analytics_storage: consent === 'yes' ? 'granted' : 'denied',
     ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });

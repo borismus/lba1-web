@@ -10,7 +10,7 @@
 const MODS = (() => {
   const ROOT = '/lba/mods';
   const FEATURES = ['hero-models', 'body-pool', 'end-fade'];  // what this engine has (web_sys.c PORT_Feature)
-  const BUILD = 1;  // bump when modkit's output changes: stored builds are redone
+  const BUILD = 2;  // bump when modkit's output changes: stored builds are redone
   const junk = p => /(^|\/)(__MACOSX|\.DS_Store|Thumbs\.db)(\/|$)/.test(p);
   let kit = null;
   // (a few tries: a busy server can drop one of its many module requests)
@@ -77,7 +77,7 @@ const MODS = (() => {
       start = { scene, at: Array.isArray(s.at) && s.at.length === 3 ? s.at.map(Number) : null };
     }
     return { id: manifest.id, name: manifest.name || manifest.id, version: manifest.version || '',
-             description: manifest.description || '', credits: [].concat(manifest.credits || []).join('. '), start, build: BUILD };
+             description: manifest.description || '', credits: [].concat(manifest.credits || []).join('. '), start, scenes, build: BUILD };
   }
 
   // -> the manifest, or throws an Error for the player

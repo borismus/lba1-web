@@ -230,8 +230,8 @@ level @name from levels/<file>.txt
 
 A level file describes a scene in text: a map of tiles drawn as characters,
 a legend, characters, zones and doors, or (with `copy: <scene>`) a copy of a
-base scene with changes. Its syntax is documented with the level builder;
-each of its lines is one of the operations above.
+base scene with changes. Its syntax: [LEVELS.md](LEVELS.md); each of its
+lines is one of the operations above.
 
 ## Scripts
 
@@ -242,7 +242,8 @@ them), with:
 - labels: `name:` defines one, `@name` jumps to it; track labels can be
   used from the same object's life script (`SET_TRACK @walk`);
 - names: `@funfrock` (an object), `@freed` (a game flag), `@yard` (a scene)
-  wherever the instruction takes a number;
+  wherever the instruction takes a number (planned: for now these are
+  numbers, see LEVELS.md);
 - `"quoted text"` wherever an instruction takes a text id;
 - plain numbers for the base's own things (object 4, track offset 46).
 

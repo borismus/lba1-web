@@ -13,6 +13,11 @@ this engine reads; the page finds them in whatever you drop. Steam: untested.
 See [`platform/web/README.md`](platform/web/README.md) for playing, building
 and developing.
 
+**Making a mod** (by hand or with a coding agent): start with
+[`AGENTS.md`](AGENTS.md), then [`docs/MODS.md`](docs/MODS.md) and
+[`docs/LEVELS.md`](docs/LEVELS.md). `tools/playtest.mjs` plays a mod
+headless, and dumps original scenes to read what to change.
+
 ## Repository map
 
 | | |

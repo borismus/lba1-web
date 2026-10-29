@@ -1,0 +1,7 @@
+{
+  "name": "lba1-web-tools",
+  "private": true,
+  "type": "module",
+  "description": "playtest.mjs: play a mod headless (npm install, then npx playwright install chromium)",
+  "devDependencies": { "playwright": "1.64.1" }
+}

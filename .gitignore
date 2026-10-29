@@ -48,3 +48,4 @@ lba1-classic-community-main/
 # Local tool settings, and secrets (API keys)
 .claude/
 .env
+node_modules/
